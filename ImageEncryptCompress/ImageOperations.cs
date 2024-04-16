@@ -243,19 +243,20 @@ namespace ImageEncryptCompress
 
             return Filtered;
         }
-        public static RGBPixel[,] ImageEncryption(RGBPixel[,] ImageMatrix,String key,int tapPosition)
+        public static RGBPixel[,] ImageEncryption(RGBPixel[,] ImageMatrix,String initKey, int tapPosition)
         {
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
 
-            string initKey = key;
-            int redPassword= BitwiseOperations.GeneratePassword(ref initKey, tapPosition);
-            int greenPassword = BitwiseOperations.GeneratePassword(ref initKey, tapPosition);
-            int bluePassword = BitwiseOperations.GeneratePassword(ref initKey, tapPosition);
+            string key = initKey;
+
             for (int i = 0; i < Height; i++)
             {
                 for(int j = 0; j < Width; j++)
                 {
+                    int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
+                    int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
+                    int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
                     ImageMatrix[i, j].red ^= (byte)redPassword;
                     ImageMatrix[i, j].green ^= (byte)greenPassword;
                     ImageMatrix[i, j].blue ^= (byte)bluePassword;
