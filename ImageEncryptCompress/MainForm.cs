@@ -31,14 +31,48 @@ namespace ImageEncryptCompress
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
 
-        private void btnGaussSmooth_Click(object sender, EventArgs e)
+        //private void btnGaussSmooth_Click(object sender, EventArgs e)
+        //{
+        //    double sigma = double.Parse(txtGaussSigma.Text);
+        //    int maskSize = (int)nudMaskSize.Value ;
+        //    ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
+        //    ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+        //}
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            double sigma = double.Parse(txtGaussSigma.Text);
-            int maskSize = (int)nudMaskSize.Value ;
-            ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+            string text = ModeSelect.SelectedItem.ToString();
+            btnApplyOperation.Text= text+"\nImage";
+            label2.Text= text + "ed Image";
         }
 
-
+        private void btnApplyOperation_Click(object sender, EventArgs e)
+        {
+            RaiseError();
+            string key=KeyTextBox.Text;
+            int tapPos = Convert.ToInt32(TapPosTextBox.Text);
+            switch (ModeSelect.Text)
+            {
+                case "Encrypt":
+                    ImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                    break;
+                case "Decrypt":
+                    break;
+                case "Compress":
+                    break;
+                case "Decompress":
+                    break;
+            }
+            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+        }
+        private void RaiseError()
+        {
+            if (KeyTextBox.Text==null||TapPosTextBox.Text==null)
+            {
+                KeyTextBox.Text = "11111111";
+                TapPosTextBox.Text = "1";
+                MessageBox.Show("key or tap position info are missing!!");
+            }
+        }
     }
 }

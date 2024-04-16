@@ -33,7 +33,7 @@ namespace ImageEncryptCompress
             this.btnOpen = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.btnGaussSmooth = new System.Windows.Forms.Button();
+            this.btnApplyOperation = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txtHeight = new System.Windows.Forms.TextBox();
@@ -44,10 +44,11 @@ namespace ImageEncryptCompress
             this.txtGaussSigma = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.KeyTextBox = new System.Windows.Forms.TextBox();
+            this.TapPosTextBox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.ModeSelect = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaskSize)).BeginInit();
@@ -98,28 +99,28 @@ namespace ImageEncryptCompress
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(605, 393);
+            this.label2.Location = new System.Drawing.Point(605, 389);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 19);
+            this.label2.Size = new System.Drawing.Size(147, 19);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Smoothed Image";
+            this.label2.Text = "Encrypted Image";
             // 
-            // btnGaussSmooth
+            // btnApplyOperation
             // 
-            this.btnGaussSmooth.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnGaussSmooth.Location = new System.Drawing.Point(471, 417);
-            this.btnGaussSmooth.Name = "btnGaussSmooth";
-            this.btnGaussSmooth.Size = new System.Drawing.Size(98, 72);
-            this.btnGaussSmooth.TabIndex = 5;
-            this.btnGaussSmooth.Text = "Apply Operation (Example)";
-            this.btnGaussSmooth.UseVisualStyleBackColor = true;
-            this.btnGaussSmooth.Click += new System.EventHandler(this.btnGaussSmooth_Click);
+            this.btnApplyOperation.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnApplyOperation.Location = new System.Drawing.Point(478, 417);
+            this.btnApplyOperation.Name = "btnApplyOperation";
+            this.btnApplyOperation.Size = new System.Drawing.Size(129, 72);
+            this.btnApplyOperation.TabIndex = 5;
+            this.btnApplyOperation.Text = "Encrypt Image";
+            this.btnApplyOperation.UseVisualStyleBackColor = true;
+            this.btnApplyOperation.Click += new System.EventHandler(this.btnApplyOperation_Click);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(591, 430);
+            this.label3.Location = new System.Drawing.Point(726, 428);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(70, 16);
             this.label3.TabIndex = 7;
@@ -129,7 +130,7 @@ namespace ImageEncryptCompress
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(591, 469);
+            this.label4.Location = new System.Drawing.Point(726, 467);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(87, 16);
             this.label4.TabIndex = 9;
@@ -152,7 +153,7 @@ namespace ImageEncryptCompress
             0,
             0,
             0});
-            this.nudMaskSize.Location = new System.Drawing.Point(685, 428);
+            this.nudMaskSize.Location = new System.Drawing.Point(820, 426);
             this.nudMaskSize.Maximum = new decimal(new int[] {
             99,
             0,
@@ -204,7 +205,7 @@ namespace ImageEncryptCompress
             // txtGaussSigma
             // 
             this.txtGaussSigma.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtGaussSigma.Location = new System.Drawing.Point(685, 466);
+            this.txtGaussSigma.Location = new System.Drawing.Point(820, 464);
             this.txtGaussSigma.Name = "txtGaussSigma";
             this.txtGaussSigma.Size = new System.Drawing.Size(57, 23);
             this.txtGaussSigma.TabIndex = 14;
@@ -231,23 +232,21 @@ namespace ImageEncryptCompress
             this.panel2.Size = new System.Drawing.Size(421, 371);
             this.panel2.TabIndex = 16;
             // 
-            // textBox1
+            // KeyTextBox
             // 
-            this.textBox1.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(100, 428);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(116, 23);
-            this.textBox1.TabIndex = 17;
+            this.KeyTextBox.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.KeyTextBox.Location = new System.Drawing.Point(61, 428);
+            this.KeyTextBox.Name = "KeyTextBox";
+            this.KeyTextBox.Size = new System.Drawing.Size(155, 23);
+            this.KeyTextBox.TabIndex = 17;
             // 
-            // textBox2
+            // TapPosTextBox
             // 
-            this.textBox2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox2.Location = new System.Drawing.Point(136, 466);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(80, 23);
-            this.textBox2.TabIndex = 18;
+            this.TapPosTextBox.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TapPosTextBox.Location = new System.Drawing.Point(137, 466);
+            this.TapPosTextBox.Name = "TapPosTextBox";
+            this.TapPosTextBox.Size = new System.Drawing.Size(79, 23);
+            this.TapPosTextBox.TabIndex = 18;
             // 
             // label7
             // 
@@ -269,15 +268,31 @@ namespace ImageEncryptCompress
             this.label8.TabIndex = 20;
             this.label8.Text = "Tap Position";
             // 
+            // ModeSelect
+            // 
+            this.ModeSelect.FormattingEnabled = true;
+            this.ModeSelect.Items.AddRange(new object[] {
+            "Encrypt",
+            "Decrypt",
+            "Compress",
+            "Decompress"});
+            this.ModeSelect.Location = new System.Drawing.Point(478, 389);
+            this.ModeSelect.Name = "ModeSelect";
+            this.ModeSelect.Size = new System.Drawing.Size(121, 21);
+            this.ModeSelect.TabIndex = 21;
+            this.ModeSelect.Text = "Encrypt";
+            this.ModeSelect.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(904, 500);
+            this.Controls.Add(this.ModeSelect);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.TapPosTextBox);
+            this.Controls.Add(this.KeyTextBox);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.txtGaussSigma);
@@ -288,7 +303,7 @@ namespace ImageEncryptCompress
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtHeight);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.btnGaussSmooth);
+            this.Controls.Add(this.btnApplyOperation);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnOpen);
@@ -313,7 +328,7 @@ namespace ImageEncryptCompress
         private System.Windows.Forms.Button btnOpen;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button btnGaussSmooth;
+        private System.Windows.Forms.Button btnApplyOperation;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtHeight;
@@ -324,10 +339,11 @@ namespace ImageEncryptCompress
         private System.Windows.Forms.TextBox txtGaussSigma;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox KeyTextBox;
+        private System.Windows.Forms.TextBox TapPosTextBox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox ModeSelect;
     }
 }
 
