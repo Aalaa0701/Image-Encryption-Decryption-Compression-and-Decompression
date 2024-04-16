@@ -39,7 +39,6 @@ namespace ImageEncryptCompress
             ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
         }
 
-       
-       
+
     }
 }
