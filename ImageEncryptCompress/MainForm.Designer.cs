@@ -49,6 +49,7 @@ namespace ImageEncryptCompress
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.ModeSelect = new System.Windows.Forms.ComboBox();
+            this.SaveBTN = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaskSize)).BeginInit();
@@ -283,11 +284,23 @@ namespace ImageEncryptCompress
             this.ModeSelect.Text = "Encrypt";
             this.ModeSelect.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
+            // SaveBTN
+            // 
+            this.SaveBTN.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SaveBTN.Location = new System.Drawing.Point(613, 417);
+            this.SaveBTN.Name = "SaveBTN";
+            this.SaveBTN.Size = new System.Drawing.Size(94, 72);
+            this.SaveBTN.TabIndex = 22;
+            this.SaveBTN.Text = "Save Image";
+            this.SaveBTN.UseVisualStyleBackColor = true;
+            this.SaveBTN.Click += new System.EventHandler(this.SaveBTN_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(904, 500);
+            this.Controls.Add(this.SaveBTN);
             this.Controls.Add(this.ModeSelect);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
@@ -344,6 +357,7 @@ namespace ImageEncryptCompress
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox ModeSelect;
+        private System.Windows.Forms.Button SaveBTN;
     }
 }
 

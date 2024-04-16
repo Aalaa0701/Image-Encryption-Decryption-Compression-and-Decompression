@@ -16,7 +16,7 @@ namespace ImageEncryptCompress
         }
 
         RGBPixel[,] ImageMatrix;
-
+        string fileName;
         private void btnOpen_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -24,6 +24,7 @@ namespace ImageEncryptCompress
             {
                 //Open the browsed image and display it
                 string OpenedFilePath = openFileDialog1.FileName;
+                fileName=OpenedFilePath;
                 ImageMatrix = ImageOperations.OpenImage(OpenedFilePath);
                 ImageOperations.DisplayImage(ImageMatrix, pictureBox1);
             }
@@ -56,8 +57,11 @@ namespace ImageEncryptCompress
             {
                 case "Encrypt":
                     OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                    Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+                    Histogram histo = new Histogram(ImageMatrix);
                     break;
                 case "Decrypt":
+                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
                     break;
                 case "Compress":
                     break;
@@ -73,6 +77,21 @@ namespace ImageEncryptCompress
                 KeyTextBox.Text = "11111111";
                 TapPosTextBox.Text = "1";
                 MessageBox.Show("key or tap position info are missing!!");
+            }
+        }
+
+        private void SaveBTN_Click(object sender, EventArgs e)
+        {
+            string[] names= fileName.Split('\\');
+            SaveFileDialog fileSave = new SaveFileDialog();
+            fileSave.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            fileSave.Title = "save encrepted image"; 
+            fileSave.Filter= "Image Files|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files (*.*)|*.*";
+            fileSave.FileName = $"ecrypted {names[names.Length-1]}";
+            DialogResult result = fileSave.ShowDialog();
+            if(result == DialogResult.OK&&pictureBox2.Image!=null)
+            {
+                pictureBox2.Image.Save(fileSave.FileName);
             }
         }
     }

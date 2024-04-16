@@ -261,6 +261,7 @@ namespace ImageEncryptCompress
                     resultImageMatrix[i, j].green ^= (byte)greenPassword;
                     resultImageMatrix[i, j].blue ^= (byte)bluePassword;
                 }
+
             }
             return resultImageMatrix;
         }
