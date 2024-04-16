@@ -51,10 +51,11 @@ namespace ImageEncryptCompress
             RaiseError();
             string key=KeyTextBox.Text;
             int tapPos = Convert.ToInt32(TapPosTextBox.Text);
+            RGBPixel[,] OperatedImageMatrix=ImageMatrix;
             switch (ModeSelect.Text)
             {
                 case "Encrypt":
-                    ImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
                     break;
                 case "Decrypt":
                     break;
@@ -63,7 +64,7 @@ namespace ImageEncryptCompress
                 case "Decompress":
                     break;
             }
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+            ImageOperations.DisplayImage(OperatedImageMatrix, pictureBox2);
         }
         private void RaiseError()
         {

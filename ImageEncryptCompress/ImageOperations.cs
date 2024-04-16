@@ -247,9 +247,9 @@ namespace ImageEncryptCompress
         {
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
-
             string key = initKey;
-
+            RGBPixel[,] resultImageMatrix=new RGBPixel[Height,Width];
+            Array.Copy(ImageMatrix, 0, resultImageMatrix, 0, ImageMatrix.Length);
             for (int i = 0; i < Height; i++)
             {
                 for(int j = 0; j < Width; j++)
@@ -257,12 +257,12 @@ namespace ImageEncryptCompress
                     int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
                     int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
                     int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    ImageMatrix[i, j].red ^= (byte)redPassword;
-                    ImageMatrix[i, j].green ^= (byte)greenPassword;
-                    ImageMatrix[i, j].blue ^= (byte)bluePassword;
+                    resultImageMatrix[i, j].red ^= (byte)redPassword;
+                    resultImageMatrix[i, j].green ^= (byte)greenPassword;
+                    resultImageMatrix[i, j].blue ^= (byte)bluePassword;
                 }
             }
-            return ImageMatrix;
+            return resultImageMatrix;
         }
 
     }
