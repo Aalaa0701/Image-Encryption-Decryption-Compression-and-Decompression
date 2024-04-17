@@ -11,13 +11,15 @@ namespace ImageEncryptCompress
 {
     public class Histogram
     {
-        public int[] redHistogram=new int[256];
-        public int[] greenHistogram=new int[256];
-        public int[] blueHistogram=new int[256];
+        private int[] redHistogram=new int[256];
+        private int[] greenHistogram=new int[256];
+        private int[] blueHistogram=new int[256];
+        private int Width;
+        private int Height;
         public Histogram(RGBPixel[,] img)
         {
-            int Height =ImageOperations.GetHeight(img);
-            int Width = ImageOperations.GetWidth(img);
+             Height =ImageOperations.GetHeight(img);
+             Width = ImageOperations.GetWidth(img);
             for (int i = 0; i < Height; i++)
             {
                 for (int j = 0; j < Width; j++)
@@ -27,22 +29,26 @@ namespace ImageEncryptCompress
                     greenHistogram[(int)img[i,j].green] ++;
                 }
             }
-            MessageBox.Show($"red {Derivation(redHistogram, Width * Height)}\n" +
-                $"blue {Derivation(blueHistogram, Width * Height)}\n" +
-                $"green {Derivation(greenHistogram, Width * Height)}\n");
-            PlotHistogram(redHistogram, greenHistogram, blueHistogram);
+        
+           //PlotHistogram(redHistogram, greenHistogram, blueHistogram);
 
         }
-        public double Derivation(int[] colorFrequencies, int size)
+        private delegate double deriver(int[] arr);
+        public double Derivation()
         {
-            double derivation = 0f;
-            foreach (int colorFrequency in colorFrequencies)
+            deriver dev = (int[] arr) =>
             {
-                derivation += Math.Abs(colorFrequency - 128);
-            }
-
-            derivation /= size;
-            return derivation;
+                double derivation = 0f;
+                foreach (int colorFrequency in arr)
+                {
+                    derivation += Math.Abs(colorFrequency - 128);
+                }
+                return derivation;
+            };
+            int size= Width * Height;
+            return (dev(redHistogram)/size+dev(greenHistogram)/size+dev(blueHistogram)/size);
+           
+         
         }
         private void PlotHistogram(int[] rHistogram, int[] gHistogram, int[] bHistogram)
         {

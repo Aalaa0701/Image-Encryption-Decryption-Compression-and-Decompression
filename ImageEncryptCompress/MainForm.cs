@@ -17,6 +17,7 @@ namespace ImageEncryptCompress
         }
 
         RGBPixel[,] ImageMatrix;
+       RGBPixel[,] OperatedImageMatrix;
         string fileName;
         private void btnOpen_Click(object sender, EventArgs e)
         {
@@ -53,43 +54,24 @@ namespace ImageEncryptCompress
             RaiseError();
             string key=KeyTextBox.Text;
             int tapPos = Convert.ToInt32(TapPosTextBox.Text);
-            RGBPixel[,] OperatedImageMatrix=ImageMatrix;
+            OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+            Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+            Histogram histo = new Histogram(ImageMatrix);
             switch (ModeSelect.Text)
             {
                 case "Encrypt":
-
-                    int Height = ImageMatrix.GetLength(0);
-                    int Width = ImageMatrix.GetLength(1);
-                    int redFreq = 0;
-                    int blueFreq = 0;
-                    int greenFreq = 0;
-                    Histogram histo = new Histogram(ImageMatrix);
-                    bool hasZeroInRed = false;
-                    bool hasZeroInGreen = false;
-                    bool hasZeroInBlue = false;
-                    for (int i = 0; i < 256; i++)
+                    if (histo.Derivation() < histoCrypted.Derivation())
                     {
-                        //condition if frequency of certain color R G B is 0 break and can be encrypted
-                        if (histo.redHistogram[i] == 0)
-                            hasZeroInRed = true;
-                        if (histo.blueHistogram[i] == 0)
-                            hasZeroInBlue = true;
-                        if (histo.greenHistogram[i] == 0)
-                            hasZeroInGreen = true;
-                        redFreq += histo.redHistogram[i];
-                        blueFreq += histo.blueHistogram[i];
-                        greenFreq += histo.greenHistogram[i];
+                        MessageBox.Show("image already encrypted");
+                        return;
                     }
-                   
-                            OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
-                        Histogram histogram = new Histogram(OperatedImageMatrix);
-
-                    
-                    //Histogram histoCrypted = new Histogram(OperatedImageMatrix);
-                    //Histogram histo = new Histogram(ImageMatrix);
                     break;
                 case "Decrypt":
-                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                    if (histo.Derivation() > histoCrypted.Derivation())
+                    {
+                        MessageBox.Show("image already decrypted");
+                        return;
+                    }
                     break;
                 case "Compress":
                     break;
@@ -121,6 +103,14 @@ namespace ImageEncryptCompress
             {
                 pictureBox2.Image.Save(fileSave.FileName);
             }
+        }
+
+        private void switchBTN_Click(object sender, EventArgs e)
+        {
+            Image img= pictureBox1.Image;
+            pictureBox1.Image = pictureBox2.Image;
+           ImageMatrix= OperatedImageMatrix;
+            pictureBox2.Image= img;
         }
     }
 }
