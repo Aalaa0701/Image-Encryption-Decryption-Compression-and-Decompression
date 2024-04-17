@@ -80,13 +80,11 @@ namespace ImageEncryptCompress
                         blueFreq += histo.blueHistogram[i];
                         greenFreq += histo.greenHistogram[i];
                     }
-                    if (redFreq == greenFreq && redFreq == blueFreq && redFreq == Width * Height)
-                    {
-                        if (hasZeroInRed || hasZeroInGreen || hasZeroInBlue)
+                   
                             OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
-                        
+                        Histogram histogram = new Histogram(OperatedImageMatrix);
 
-                    }
+                    
                     //Histogram histoCrypted = new Histogram(OperatedImageMatrix);
                     //Histogram histo = new Histogram(ImageMatrix);
                     break;

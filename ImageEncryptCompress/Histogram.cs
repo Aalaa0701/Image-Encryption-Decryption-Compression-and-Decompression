@@ -27,9 +27,23 @@ namespace ImageEncryptCompress
                     greenHistogram[(int)img[i,j].green] ++;
                 }
             }
+            MessageBox.Show($"red {Derivation(redHistogram, Width * Height)}\n" +
+                $"blue {Derivation(blueHistogram, Width * Height)}\n" +
+                $"green {Derivation(greenHistogram, Width * Height)}\n");
             PlotHistogram(redHistogram, greenHistogram, blueHistogram);
-        }
 
+        }
+        public double Derivation(int[] colorFrequencies, int size)
+        {
+            double derivation = 0f;
+            foreach (int colorFrequency in colorFrequencies)
+            {
+                derivation += Math.Abs(colorFrequency - 128);
+            }
+
+            derivation /= size;
+            return derivation;
+        }
         private void PlotHistogram(int[] rHistogram, int[] gHistogram, int[] bHistogram)
         {
             // Create a new form to display the histograms

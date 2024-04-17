@@ -243,8 +243,14 @@ namespace ImageEncryptCompress
 
             return Filtered;
         }
+       static HashSet<int> redPasswords= new HashSet<int>();
+       static HashSet<int> greenPasswords = new HashSet<int>();
+       static HashSet<int> bluePasswords = new HashSet<int>();
         public static RGBPixel[,] ImageEncryption(RGBPixel[,] ImageMatrix,String initKey, int tapPosition)
         {
+            redPasswords.Clear();
+            greenPasswords.Clear();
+            bluePasswords.Clear();
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
             string key = initKey;
@@ -257,12 +263,18 @@ namespace ImageEncryptCompress
                     int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
                     int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
                     int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
+                    redPasswords.Add(redPassword);
+                    greenPasswords.Add(greenPassword);
+                    bluePasswords.Add(bluePassword);
                     resultImageMatrix[i, j].red ^= (byte)redPassword;
                     resultImageMatrix[i, j].green ^= (byte)greenPassword;
                     resultImageMatrix[i, j].blue ^= (byte)bluePassword;
                 }
 
             }
+            MessageBox.Show($"red:{redPasswords.Count}\n" +
+                $"blue:{bluePasswords.Count}\n" +
+                $"green:{greenPasswords.Count}\n");
             return resultImageMatrix;
         }
 
