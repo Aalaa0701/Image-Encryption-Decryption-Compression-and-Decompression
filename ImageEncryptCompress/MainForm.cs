@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ImageEncryptCompress
 {
@@ -56,9 +57,38 @@ namespace ImageEncryptCompress
             switch (ModeSelect.Text)
             {
                 case "Encrypt":
-                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
-                    Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+
+                    int Height = ImageMatrix.GetLength(0);
+                    int Width = ImageMatrix.GetLength(1);
+                    int redFreq = 0;
+                    int blueFreq = 0;
+                    int greenFreq = 0;
                     Histogram histo = new Histogram(ImageMatrix);
+                    bool hasZeroInRed = false;
+                    bool hasZeroInGreen = false;
+                    bool hasZeroInBlue = false;
+                    for (int i = 0; i < 256; i++)
+                    {
+                        //condition if frequency of certain color R G B is 0 break and can be encrypted
+                        if (histo.redHistogram[i] == 0)
+                            hasZeroInRed = true;
+                        if (histo.blueHistogram[i] == 0)
+                            hasZeroInBlue = true;
+                        if (histo.greenHistogram[i] == 0)
+                            hasZeroInGreen = true;
+                        redFreq += histo.redHistogram[i];
+                        blueFreq += histo.blueHistogram[i];
+                        greenFreq += histo.greenHistogram[i];
+                    }
+                    if (redFreq == greenFreq && redFreq == blueFreq && redFreq == Width * Height)
+                    {
+                        if (hasZeroInRed || hasZeroInGreen || hasZeroInBlue)
+                            OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                        
+
+                    }
+                    //Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+                    //Histogram histo = new Histogram(ImageMatrix);
                     break;
                 case "Decrypt":
                     OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);

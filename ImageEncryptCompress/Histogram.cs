@@ -11,9 +11,9 @@ namespace ImageEncryptCompress
 {
     public class Histogram
     {
-        int[] redHistogram=new int[256];
-        int[] greenHistogram=new int[256];
-        int[] blueHistogram=new int[256];
+        public int[] redHistogram=new int[256];
+        public int[] greenHistogram=new int[256];
+        public int[] blueHistogram=new int[256];
         public Histogram(RGBPixel[,] img)
         {
             int Height =ImageOperations.GetHeight(img);
