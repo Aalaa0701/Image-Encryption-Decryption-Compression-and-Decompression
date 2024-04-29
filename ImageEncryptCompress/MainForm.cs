@@ -52,28 +52,29 @@ namespace ImageEncryptCompress
         private void btnApplyOperation_Click(object sender, EventArgs e)
         {
             RaiseError();
-            string key=KeyTextBox.Text;
-            int tapPos = Convert.ToInt32(TapPosTextBox.Text);
-            OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
-            Histogram histoCrypted = new Histogram(OperatedImageMatrix);
-            Histogram histo = new Histogram(ImageMatrix);
+            //string key=KeyTextBox.Text;
+            //int tapPos = Convert.ToInt32(TapPosTextBox.Text);
+            //OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+            //Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+            //Histogram histo = new Histogram(ImageMatrix);
             switch (ModeSelect.Text)
             {
                 case "Encrypt":
-                    if (histo.Derivation() < histoCrypted.Derivation())
-                    {
-                        MessageBox.Show("image already encrypted");
-                        return;
-                    }
+                    //if (histo.Derivation() < histoCrypted.Derivation())
+                    //{
+                    //    MessageBox.Show("image already encrypted");
+                    //    return;
+                    //}
                     break;
                 case "Decrypt":
-                    if (histo.Derivation() > histoCrypted.Derivation())
-                    {
-                        MessageBox.Show("image already decrypted");
-                        return;
-                    }
+                    //if (histo.Derivation() > histoCrypted.Derivation())
+                    //{
+                    //    MessageBox.Show("image already decrypted");
+                    //    return;
+                    //}
                     break;
                 case "Compress":
+                    ImageOperations.Compression(ImageMatrix);
                     break;
                 case "Decompress":
                     break;

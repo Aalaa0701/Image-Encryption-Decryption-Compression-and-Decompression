@@ -4,6 +4,9 @@ using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
+using Priority_Queue;
+using System.Linq;
+using System.ComponentModel;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -21,7 +24,22 @@ namespace ImageEncryptCompress
     {
         public double red, green, blue;
     }
-    
+    public class Node
+    {
+        public int colorval;
+        public int freq;
+        public Node left;
+        public Node right;
+        //int val;
+        public Node(int colorval,int freq,Node left ,Node right)
+        {
+            this.freq = freq;
+            this.left = left;
+            this.right = right;
+            this.colorval = colorval;
+            //this.val = val;
+        }
+    }
   
     /// <summary>
     /// Library of static functions that deal with images
@@ -277,6 +295,151 @@ namespace ImageEncryptCompress
                 $"green:{greenPasswords.Count}\n");
             return resultImageMatrix;
         }
+        static SimplePriorityQueue<Node> priorityQueueRed = new SimplePriorityQueue<Node>();
+        static SimplePriorityQueue<Node> priorityQueueBlue = new SimplePriorityQueue<Node>();
+        static SimplePriorityQueue<Node> priorityQueueGreen = new SimplePriorityQueue<Node>();
+        public static Dictionary<int, int> encodeint = new Dictionary<int, int>();
+        //traverse tree 
+        public static Dictionary<int, string> Traverse(Node root, string bit, Dictionary<int, string> encode)
+        {
+            //encode.Clear();
+            if (root == null)
+            {
+                return encode;
+            }
+            if (root.left == null && root.right == null)
+            {
+                    encode[root.colorval] = bit;
+            }
+            Traverse(root.left, bit + "0",encode);
+            Traverse(root.right, bit + "1", encode);
+            return encode;
 
+        }
+        public static RGBPixel[,] Compression(RGBPixel[,] ImageMatrix)
+        {   
+            int Height = GetHeight(ImageMatrix);
+            int Width = GetWidth(ImageMatrix);
+            Dictionary<int , int> freqRed = new Dictionary<int , int>();
+            Dictionary<int , int> freqBlue = new Dictionary<int , int>();
+            Dictionary<int , int> freqGreen = new Dictionary<int , int>();
+            Node left, right;
+            int newFreq;
+            int originalSizer=0;
+            int originalSizeb=0;
+            int originalSizeg=0;
+            int compressedSizer=0;
+            int compressedSizeb=0;
+            int compressedSizeg=0;
+            //frequency of red
+            Histogram histogram = new Histogram(ImageMatrix);
+            for(int i = 0; i < histogram.redHistogram.Count();i++)
+            {
+                if (histogram.redHistogram[i]!=0)
+                    freqRed[i] = histogram.redHistogram[i];
+                
+            }
+            //frequency of blue 
+            for (int i = 0; i < histogram.blueHistogram.Count(); i++)
+            {
+                if (histogram.blueHistogram[i] != 0)
+                    freqBlue[i] = histogram.blueHistogram[i];
+
+            }
+            //frequency of green
+            for (int i = 0; i < histogram.greenHistogram.Count(); i++)
+            {
+                if (histogram.greenHistogram[i] != 0)
+                    freqGreen[i] = histogram.greenHistogram[i];
+
+            }
+            //calc original size
+            foreach(var i in freqRed)
+            {
+               
+                originalSizer += (freqRed[i.Key]*8);
+            }
+
+            foreach (var i in freqBlue)
+            {
+                originalSizeb += (freqBlue[i.Key]*8);
+            }
+            foreach (var i in freqGreen)
+            {
+                originalSizeg += (freqGreen[i.Key] * 8);
+            }
+
+            //huffman tree for red values
+            foreach (var i in freqRed.Keys)
+            {
+                Node newNode = new Node(i,freqRed[i],null,null);
+                priorityQueueRed.Enqueue(newNode, freqRed[i]);
+            }
+            while (priorityQueueRed.Count != 1)
+            {
+                left = priorityQueueRed.Dequeue();
+                right = priorityQueueRed.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueRed.Enqueue(newNode, newFreq);
+            }
+            //huffman tree for blue values
+            foreach (var i in freqBlue.Keys)
+            {
+                Node newNode = new Node(i, freqBlue[i], null, null);
+                priorityQueueBlue.Enqueue(newNode, freqBlue[i]);
+            }
+            while (priorityQueueBlue.Count != 1)
+            {
+                left = priorityQueueBlue.Dequeue();
+                right = priorityQueueBlue.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueBlue.Enqueue(newNode, newFreq);
+            }
+            //huffman tree for green values
+            foreach (var i in freqGreen.Keys)
+            {
+                Node newNode = new Node(i, freqGreen[i], null, null);
+                priorityQueueGreen.Enqueue(newNode, freqGreen[i]);
+            }
+            while (priorityQueueGreen.Count != 1)
+            {
+                left = priorityQueueGreen.Dequeue();
+                right = priorityQueueGreen.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueGreen.Enqueue(newNode, newFreq);
+            }
+
+
+            Dictionary<int, string> redencoding = new Dictionary<int, string>();
+            Traverse(priorityQueueRed.Dequeue(), "",redencoding);
+            Dictionary<int, string> blueencoding = new Dictionary<int, string>();
+            Traverse(priorityQueueBlue.Dequeue(), "",blueencoding);
+            Dictionary<int, string> greenencoding = new Dictionary<int, string>();
+            Traverse(priorityQueueGreen.Dequeue(), "",greenencoding);
+          
+            foreach (var i in redencoding)
+            {
+                compressedSizer += freqRed[i.Key] * i.Value.Length;
+            }
+            foreach (var i in blueencoding)
+            {
+                compressedSizeb += freqBlue[i.Key] * i.Value.Length;
+            }
+            foreach (var i in greenencoding)
+            {
+                compressedSizeg += freqGreen[i.Key] * i.Value.Length;
+            }
+            int redRatio = (compressedSizer / originalSizer) * 100;
+            int blueRatio = (compressedSizeb / originalSizeb) * 100;
+            int greenRatio = (compressedSizeg / originalSizeg) * 100;
+            MessageBox.Show($"Red ratio :{redRatio}\n" +
+            $"Blue ratio:{blueRatio}\n" +
+            $"Green ratio:{greenRatio}\n");
+            return ImageMatrix;
+        }
+        
     }
 }

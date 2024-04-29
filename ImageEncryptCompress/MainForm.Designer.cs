@@ -248,7 +248,7 @@ namespace ImageEncryptCompress
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(904, 500);
+            this.ClientSize = new System.Drawing.Size(913, 500);
             this.Controls.Add(this.switchBTN);
             this.Controls.Add(this.SaveBTN);
             this.Controls.Add(this.ModeSelect);
