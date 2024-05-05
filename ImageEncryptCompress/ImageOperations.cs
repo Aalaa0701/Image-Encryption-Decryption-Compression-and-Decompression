@@ -432,9 +432,9 @@ namespace ImageEncryptCompress
             {
                 compressedSizeg += freqGreen[i.Key] * i.Value.Length;
             }
-            int redRatio = (compressedSizer / originalSizer) * 100;
-            int blueRatio = (compressedSizeb / originalSizeb) * 100;
-            int greenRatio = (compressedSizeg / originalSizeg) * 100;
+            double redRatio = ((double)compressedSizer / (double)originalSizer) * 100;
+            double blueRatio = ((double)compressedSizeb / (double)originalSizeb) * 100;
+            double greenRatio = ((double)compressedSizeg / (double)originalSizeg) * 100;
             MessageBox.Show($"Red ratio :{redRatio}\n" +
             $"Blue ratio:{blueRatio}\n" +
             $"Green ratio:{greenRatio}\n");
