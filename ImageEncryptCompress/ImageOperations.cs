@@ -479,78 +479,60 @@ namespace ImageEncryptCompress
             $"Green ratio:{greenRatio}\n");
             return ImageMatrix;
         }
-        
-        public static RGBPixel[,] ImageDecompression(DecompressedImage[,] compressedImage, Dictionary<string, int> redDict, Dictionary<string, int> greenDict, Dictionary<string, int> blueDict)
-        {
-            int height = compressedImage.GetLength(0);
-            int width = compressedImage.GetLength(1);
 
-            RGBPixel[,] decompressedImage = new RGBPixel[height, width];
-            for(int i = 0; i < height; i++)
+
+        public static RGBPixel[,] Decompression(RGBPixel[,] ImageMatrix, Dictionary<int, string> redDictionary, Dictionary<int, string> blueDictionary, Dictionary<int, string> greenDictionary)
+        {
+            int Height = GetHeight(ImageMatrix);
+            int Width = GetWidth(ImageMatrix);
+
+            RGBPixel[,] decompressedImage = new RGBPixel[Height, Width];
+            int redIndex = 0, blueIndex = 0, greenIndex = 0;
+
+            for (int i = 0; i < Height; i++)
             {
-                for(int j = 0; j < width; j++)
+                for (int j = 0; j < Width; j++)
                 {
-                    decompressedImage[i, j].red = (byte)redDict[compressedImage[i, j].redRep];
-                    decompressedImage[i, j].green = (byte)greenDict[compressedImage[i, j].greenRep];
-                    decompressedImage[i, j].blue = (byte)blueDict[compressedImage[i, j].blueRep];
+                    RGBPixel pixel = ImageMatrix[i, j];
+                    byte redVal = (byte)DecodeValue(redDictionary, pixel.red, ref redIndex);
+                    byte blueVal = (byte)DecodeValue(blueDictionary, pixel.blue, ref blueIndex);
+                    byte greenVal = (byte)DecodeValue(greenDictionary, pixel.green, ref greenIndex);
+
+                    decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
+                    
                 }
             }
+
             return decompressedImage;
         }
-        //public static RGBPixel[,] Decompression(RGBPixel[,] ImageMatrix, Dictionary<int, string> redDictionary, Dictionary<int, string> blueDictionary, Dictionary<int, string> greenDictionary)
-        //{
-        //    int Height = GetHeight(ImageMatrix);
-        //    int Width = GetWidth(ImageMatrix);
 
-        //    RGBPixel[,] decompressedImage = new RGBPixel[Height, Width];
-        //    int redIndex = 0, blueIndex = 0, greenIndex = 0;
+        public static int DecodeValue(Dictionary<int, string> dictionary, int encodedValue, ref int bitIndex)
+        {
+            string code = "";
+            int value = 0;
 
-        //    for (int i = 0; i < Height; i++)
-        //    {
-        //        for (int j = 0; j < Width; j++)
-        //        {
-        //            RGBPixel pixel = ImageMatrix[i, j];
-        //            if (pixel.IsValid())
-        //            {
-        //                byte redVal = (byte)DecodeValue(redDictionary, pixel.red, ref redIndex);
-        //                byte blueVal = (byte)DecodeValue(blueDictionary, pixel.blue, ref blueIndex);
-        //                byte greenVal = (byte)DecodeValue(greenDictionary, pixel.green, ref greenIndex);
+            while (!dictionary.ContainsValue(code))
+            {
+                int bit = GetBit(encodedValue, bitIndex);
+                code += bit.ToString();
+                bitIndex++;
+            }
 
-        //                decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
-        //            }
-        //        }
-        //    }
+            foreach (var pair in dictionary)
+            {
+                if (pair.Value == code)
+                {
+                    value = pair.Key;
+                    break;
+                }
+            }
 
-        //    return decompressedImage;
-        //}
+            return value;
+        }
 
-        //public static int DecodeValue(Dictionary<int, string> dictionary, int encodedValue, ref int bitIndex)
-        //{
-        //    string code = "";
-        //    int value = 0;
-
-        //    while (!dictionary.ContainsValue(code))
-        //    {
-        //        int bit = GetBit(encodedValue, bitIndex);
-        //        code += bit.ToString();
-        //        bitIndex++;
-        //    }
-
-        //    foreach (var pair in dictionary)
-        //    {
-        //        if (pair.Value == code)
-        //        {
-        //            value = pair.Key;
-        //            break;
-        //        }
-        //    }
-
-        //    return value;
-        //}
-
-        //public static int GetBit(int value, int bitIndex)
-        //{
-        //    return (value >> bitIndex) & 1;
-        //}
+        public static int GetBit(int value, int bitIndex)
+        {
+            return (value >> bitIndex) & 1;
+        }
     }
 }
