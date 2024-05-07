@@ -24,13 +24,42 @@ namespace ImageEncryptCompress
         {
             long convertedKey = Convert.ToInt32(key, 2);
             int numberOfBits = key.Length;
+            long desiredBit;
+            long result = (1 << 8) - 1;
+            string bitADDER;
             for (int i = 0; i < numberOfBitsToGenerate; i++)
             {
                 convertedKey = XORBits(convertedKey, numberOfBits, tapPosition);
+                desiredBit = convertedKey & 1;
+                if (desiredBit == 1)
+                    continue;
+                desiredBit = ~(1 << 7 - i);
+
+                result = result & desiredBit;
+
+
             }
             key = Convert.ToString(convertedKey, 2).PadLeft(numberOfBits, '0');
-            long result = convertedKey & ((1 << numberOfBitsToGenerate) - 1);
             return (int)result;
+        }
+        public static byte GenerateAlphanumericPassword(ref StringBuilder seed, int tapPos, int seedLength)
+        {
+            byte lastChar = Convert.ToByte(seed[0]);
+            byte charTapPos = Convert.ToByte(seed[seedLength - tapPos]);
+            byte generatedChar = (byte)((int)lastChar ^ (int)charTapPos);
+            seed.Remove(0, 1);
+            seed.Append((char)generatedChar);
+            return generatedChar;
+        }
+        public static int CountBits(int n)
+        {
+            int count = 0;
+            while (n != 0)
+            {
+                count++;
+                n >>= 1;
+            }
+            return count;
         }
     }
 }

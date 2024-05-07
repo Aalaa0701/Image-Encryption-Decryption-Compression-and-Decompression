@@ -12,7 +12,8 @@ namespace ImageEncryptCompress
     public class Histogram
     {
         public int[] redHistogram=new int[256];
-        public int[] greenHistogram=new int[256];
+        public int grayCount = 0;
+        public int[] greenHistogram = new int[256];
         public int[] blueHistogram=new int[256];
         public int Width;
         public int Height;
@@ -23,7 +24,7 @@ namespace ImageEncryptCompress
             for (int i = 0; i < Height; i++)
             {
                 for (int j = 0; j < Width; j++)
-                {
+                {    
                     redHistogram[(int)img[i,j].red] ++;
                     blueHistogram[(int)img[i,j].blue] ++;
                     greenHistogram[(int)img[i,j].green] ++;
@@ -33,22 +34,66 @@ namespace ImageEncryptCompress
            //PlotHistogram(redHistogram, greenHistogram, blueHistogram);
 
         }
+        public double calcMean(int[] arr)
+        {
+            int numOfNonZeroes = 0;
+            double frequenciesOfNonZeroes = 0;
+            for(int i = 0; i < 256; i++) {
+                if (arr[i] == 0)
+                    continue;
+                numOfNonZeroes ++;
+                frequenciesOfNonZeroes += (double)arr[i];
+            }
+            double mean = frequenciesOfNonZeroes / numOfNonZeroes;
+            return mean;
+        }
+        //private delegate double deriver(int[] arr, int x);
+        //public double Derivation()
+        //{
+        //    double meanR = calcMean(redHistogram);
+        //    double meanB = calcMean(blueHistogram);
+        //    double meanG = calcMean(greenHistogram);
+        //    deriver dev = (int[] arr, int mean) =>
+        //    {
+        //        double derivation = 0f;
+        //        for (int i = 0; i < 256; i++)
+        //        {
+        //            derivation += Math.Abs(arr[i]*i + 1 - arr[127]*128);
+        //        }
+
+        //        return derivation;
+        //    };
+
+        //    double derivationVAR = dev(redHistogram, (int)meanR) + dev(blueHistogram, (int)meanB) + dev(greenHistogram, (int)meanG);
+
+        //    return derivationVAR;
+
+
+        //}
         private delegate double deriver(int[] arr);
         public double Derivation()
         {
             deriver dev = (int[] arr) =>
             {
                 double derivation = 0f;
-                foreach (int colorFrequency in arr)
+                double allFrequencies = 0;
+                double standardDev = 0;
+                for(int i = 0; i < 256; i++)
                 {
-                    derivation += Math.Abs(colorFrequency - 128);
+                    int x = 128 - i;
+                    standardDev += Math.Pow(x, 4);
+                    derivation += x * x * arr[i];
+                    allFrequencies += arr[i];
                 }
+                derivation = Math.Sqrt(derivation / allFrequencies);
+                derivation = standardDev / 256 * Math.Pow(derivation, 4);
+                derivation -= 3;
                 return derivation;
             };
-            int size= Width * Height;
-            return (dev(redHistogram)/size+dev(greenHistogram)/size+dev(blueHistogram)/size);
-           
-         
+            //int size = Width * Height;
+            return (dev(redHistogram) + dev(greenHistogram) + dev(blueHistogram));
+
+
         }
         private void PlotHistogram(int[] rHistogram, int[] gHistogram, int[] bHistogram)
         {
