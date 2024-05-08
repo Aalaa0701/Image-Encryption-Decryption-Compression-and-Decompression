@@ -124,6 +124,11 @@ namespace ImageEncryptCompress
         {
             return ImageMatrix.GetLength(0);
         }
+        public static int GetHeightCompressed(DecompressedImage[,] compressedImage)
+        {
+            return compressedImage.GetLength(0);
+
+        }
 
         /// <summary>
         /// Get the width of the image 
@@ -133,6 +138,10 @@ namespace ImageEncryptCompress
         public static int GetWidth(RGBPixel[,] ImageMatrix)
         {
             return ImageMatrix.GetLength(1);
+        }
+        public static int GetWidthCompressed(DecompressedImage[,] compressedImage)
+        {
+            return compressedImage.GetLength(1);
         }
 
         /// <summary>
@@ -479,12 +488,12 @@ namespace ImageEncryptCompress
             $"Green ratio:{greenRatio}\n");
             return ImageMatrix;
         }
+       
 
-
-        public static RGBPixel[,] Decompression(RGBPixel[,] ImageMatrix, Dictionary<int, string> redDictionary, Dictionary<int, string> blueDictionary, Dictionary<int, string> greenDictionary)
+        public static RGBPixel[,] Decompression(DecompressedImage[,] compressedImage, Dictionary<string, int> redDictionary, Dictionary<string, int> blueDictionary, Dictionary<string, int> greenDictionary)
         {
-            int Height = GetHeight(ImageMatrix);
-            int Width = GetWidth(ImageMatrix);
+            int Height = GetHeightCompressed(compressedImage);
+            int Width = GetWidthCompressed(compressedImage);
 
             RGBPixel[,] decompressedImage = new RGBPixel[Height, Width];
             int redIndex = 0, blueIndex = 0, greenIndex = 0;
@@ -493,10 +502,11 @@ namespace ImageEncryptCompress
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    RGBPixel pixel = ImageMatrix[i, j];
-                    byte redVal = (byte)DecodeValue(redDictionary, pixel.red, ref redIndex);
-                    byte blueVal = (byte)DecodeValue(blueDictionary, pixel.blue, ref blueIndex);
-                    byte greenVal = (byte)DecodeValue(greenDictionary, pixel.green, ref greenIndex);
+                    
+                    
+                    byte redVal = (byte)redDictionary[compressedImage[i, j].redRep];
+                    byte blueVal = (byte)blueDictionary[compressedImage[i, j].blueRep];
+                    byte greenVal = (byte)greenDictionary[compressedImage[i, j].greenRep];
 
                     decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
                     
