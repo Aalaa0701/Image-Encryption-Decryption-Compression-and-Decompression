@@ -22,7 +22,7 @@ namespace ImageEncryptCompress
         }
         public static int GeneratePassword(ref string key, int tapPosition, int numberOfBitsToGenerate = 8)
         {
-            long convertedKey = Convert.ToInt32(key, 2);
+            long convertedKey = Convert.ToInt64(key, 2);
             int numberOfBits = key.Length;
             long desiredBit;
             long result = (1 << 8) - 1;
