@@ -477,15 +477,15 @@ namespace ImageEncryptCompress
             double origSize = Height * Width * 24;
             double compressedSize = compressedSizer + compressedSizeg + compressedSizeb;
             double compRatio = (compressedSize / origSize) * 100;
-            MessageBox.Show((compressedSizer + compressedSizeg + compressedSizeb).ToString());
+          /*  MessageBox.Show((compressedSizer + compressedSizeg + compressedSizeb).ToString());
             MessageBox.Show(origSize.ToString());
-            MessageBox.Show($"Compression ratio: {compRatio}");
+            MessageBox.Show($"Compression ratio: {compRatio}");*/
             double redRatio = ((double)compressedSizer / (double)originalSizer) * 100;
             double blueRatio = ((double)compressedSizeb / (double)originalSizeb) * 100;
             double greenRatio = ((double)compressedSizeg / (double)originalSizeg) * 100;
-            MessageBox.Show($"Red ratio :{redRatio}\n" +
+/*            MessageBox.Show($"Red ratio :{redRatio}\n" +
             $"Blue ratio:{blueRatio}\n" +
-            $"Green ratio:{greenRatio}\n");
+            $"Green ratio:{greenRatio}\n");*/
             return ImageMatrix;
         }
        
