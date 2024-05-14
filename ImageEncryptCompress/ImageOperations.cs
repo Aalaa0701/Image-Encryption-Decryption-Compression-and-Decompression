@@ -353,7 +353,7 @@ namespace ImageEncryptCompress
             return encode;
 
         }
-        public static RGBPixel[,] Compression(ref int numOfBytesRed, ref int numOfBytesGreen, ref int numOfBytesBlue, ref Dictionary<int, string> redDict, ref Dictionary<int, string> greenDict, ref Dictionary<int, string> blueDict, RGBPixel[,] ImageMatrix)
+        public static RGBPixel[,] Compression(ref bool compressed100, ref int numOfBytesRed, ref int numOfBytesGreen, ref int numOfBytesBlue, ref Dictionary<int, string> redDict, ref Dictionary<int, string> greenDict, ref Dictionary<int, string> blueDict, RGBPixel[,] ImageMatrix)
         {   
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
@@ -477,6 +477,8 @@ namespace ImageEncryptCompress
             double origSize = Height * Width * 24;
             double compressedSize = compressedSizer + compressedSizeg + compressedSizeb;
             double compRatio = (compressedSize / origSize) * 100;
+            if(compRatio == 100)
+                compressed100 = true;
           /*  MessageBox.Show((compressedSizer + compressedSizeg + compressedSizeb).ToString());
             MessageBox.Show(origSize.ToString());
             MessageBox.Show($"Compression ratio: {compRatio}");*/
@@ -496,19 +498,20 @@ namespace ImageEncryptCompress
             int Width = GetWidthCompressed(compressedImage);
 
             RGBPixel[,] decompressedImage = new RGBPixel[Height, Width];
-            int redIndex = 0, blueIndex = 0, greenIndex = 0;
 
             for (int i = 0; i < Height; i++)
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    
-                    
-                    byte redVal = (byte)redDictionary[compressedImage[i, j].redRep];
-                    byte blueVal = (byte)blueDictionary[compressedImage[i, j].blueRep];
-                    byte greenVal = (byte)greenDictionary[compressedImage[i, j].greenRep];
 
-                    decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
+                    decompressedImage[i, j].red = (byte)redDictionary[compressedImage[i, j].redRep];
+                    decompressedImage[i, j].green = (byte)greenDictionary[compressedImage[i, j].greenRep];
+                    decompressedImage[i, j].blue = (byte)blueDictionary[compressedImage[i, j].blueRep];
+                    //byte redVal = (byte)redDictionary[compressedImage[i, j].redRep];
+                    //byte blueVal = (byte)blueDictionary[compressedImage[i, j].blueRep];
+                    //byte greenVal = (byte)greenDictionary[compressedImage[i, j].greenRep];
+
+                    //decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
                     
                 }
             }

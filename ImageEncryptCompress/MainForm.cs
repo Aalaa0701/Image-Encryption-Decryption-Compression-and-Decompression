@@ -22,6 +22,8 @@ namespace ImageEncryptCompress
         }
 
 
+        //global variables
+        bool compressed100 = false;
         
 
         RGBPixel[,] ImageMatrix;
@@ -115,7 +117,7 @@ namespace ImageEncryptCompress
                     //    return;
                     //}
 
-                    ImageOperations.Compression(ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, OperatedImageMatrix);
+                    ImageOperations.Compression(ref compressed100, ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, OperatedImageMatrix);
                     //WriteInaFile(filePath, redDict, greenDict, blueDict, isEncrypted, key, 
                     //    tapPos, numOfBytesRed, numOfBytesGreen, numOfBytesBlue);
                     sw.Stop();
@@ -129,7 +131,7 @@ namespace ImageEncryptCompress
                     //}
                     break;
                 case "Compress":
-                    ImageOperations.Compression(ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, ImageMatrix);
+                    ImageOperations.Compression(ref compressed100, ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, ImageMatrix);
                     //WriteInaFile(filePath, redDict, greenDict, blueDict, isEncrypted, key, tapPos, 
                     //    numOfBytesRed, numOfBytesGreen, numOfBytesBlue);
                     OperatedImageMatrix = ImageMatrix;
@@ -170,25 +172,29 @@ namespace ImageEncryptCompress
                     writer.Write(seed);
                     writer.Write(tapPos);
                 }
-                writer.Write(redDict.Count);
-                foreach (int keyVal in redDict.Keys)
+                writer.Write(compressed100);
+                if(!compressed100)
                 {
-                    writer.Write(redDict[keyVal]);
-                    writer.Write(keyVal);
-                }
-                writer.Write(greenDict.Count);
-                foreach (int keyVal in greenDict.Keys)
-                {
-                    writer.Write(greenDict[keyVal]);
-                    writer.Write(keyVal);
+                    writer.Write(redDict.Count);
+                    foreach (int keyVal in redDict.Keys)
+                    {
+                        writer.Write(redDict[keyVal]);
+                        writer.Write((byte)keyVal);
+                    }
+                    writer.Write(greenDict.Count);
+                    foreach (int keyVal in greenDict.Keys)
+                    {
+                        writer.Write(greenDict[keyVal]);
+                        writer.Write((byte)keyVal);
 
-                }
-                writer.Write(blueDict.Count);
-                foreach (int keyVal in blueDict.Keys)
-                {
-                    writer.Write(blueDict[keyVal]);
-                    writer.Write(keyVal);
+                    }
+                    writer.Write(blueDict.Count);
+                    foreach (int keyVal in blueDict.Keys)
+                    {
+                        writer.Write(blueDict[keyVal]);
+                        writer.Write((byte)keyVal);
 
+                    }
                 }
                 int height = ImageOperations.GetHeight(ImageMatrix);
                 int width = ImageOperations.GetWidth(ImageMatrix);
@@ -197,187 +203,191 @@ namespace ImageEncryptCompress
                 int remainingBits = 0;
                 //write red bits first
 
-                //int numOfBytesRed = 0;
-                //if (numOfBitsRed % 8 == 0)
-                //    numOfBytesRed = numOfBitsRed / 8;
-                //else
-                //    numOfBytesRed = (numOfBitsRed / 8) + 1;
-                //int writtenRed = 0;
                 writer.Write(numOfBitsRed);
-                //writer.Write(numOfBytesRed);
-                for (int i = 0; i < height; i++)
+                if (!compressed100)
                 {
-                    for (int j = 0; j < width; j++)
+
+                    for (int i = 0; i < height; i++)
                     {
-                        //RED
-
-                        string redVal = redDict[(int)OperatedImageMatrix[i, j].red];
-                        int redBitsLength = redBits.Length;
-                        int redLength = redVal.Length;
-                        remainingBits = 8 - redBitsLength;
-                        if (redLength <= remainingBits)
+                        for (int j = 0; j < width; j++)
                         {
-                            redBits.Append(redVal);
-
-                        }
-                        else
-                        {
-                            int startIndex = 0;
-                            int takenBits = 0;
-                            do
+                            //RED
+                            
+                            string redVal = redDict[(int)OperatedImageMatrix[i, j].red];
+                            int redBitsLength = redBits.Length;
+                            int redLength = redVal.Length;
+                            remainingBits = 8 - redBitsLength;
+                            if (redLength <= remainingBits)
                             {
-                                remainingBits = 8 - redBits.Length;
-                                takenBits += remainingBits;
-                                redBits.Append(redVal.Substring(startIndex, remainingBits));
-                                writer.Write(Convert.ToByte(redBits.ToString(), 2));
-                                //writtenRed++;
-                                redBits.Clear();
-                                startIndex = takenBits;
-
-                            } while (redLength - takenBits > 8);
-                            if (redLength - takenBits > 0)
-                            {
-                                redBits.Append(redVal.Substring(startIndex));
-                            }
-                        }
-                        if (redBits.Length == 8 || (i == height - 1 && j == width - 1))
-                        {
-                            if (redBits.Length > 0)
-                            {
-                                byte redByte = Convert.ToByte(redBits.ToString(), 2);
-                                writer.Write(redByte);
-                                // writtenRed++;
-                                redBits.Clear();
+                                redBits.Append(redVal);
 
                             }
-                            //convert to byte
+                            else
+                            {
+                                int startIndex = 0;
+                                int takenBits = 0;
+                                do
+                                {
+                                    remainingBits = 8 - redBits.Length;
+                                    takenBits += remainingBits;
+                                    redBits.Append(redVal.Substring(startIndex, remainingBits));
+                                    writer.Write(Convert.ToByte(redBits.ToString(), 2));
+                                    redBits.Clear();
+                                    startIndex = takenBits;
+
+                                } while (redLength - takenBits > 8);
+                                if (redLength - takenBits > 0)
+                                {
+                                    redBits.Append(redVal.Substring(startIndex));
+                                }
+                            }
+                            if (redBits.Length == 8 || (i == height - 1 && j == width - 1))
+                            {
+                                if (redBits.Length > 0)
+                                {
+                                    byte redByte = Convert.ToByte(redBits.ToString(), 2);
+                                    writer.Write(redByte);
+                                    redBits.Clear();
+
+                                }
+                            }
+
                         }
 
                     }
 
-                }
-
-                //write green bits
-                //int writtenGreen = 0;
-                //int numOfBytesGreen = 0;
-                //if (numOfBitsGreen % 8 == 0)
-                //    numOfBytesGreen = numOfBitsGreen / 8;
-                //else
-                //    numOfBytesGreen = (numOfBitsGreen / 8) + 1;
-                writer.Write(numOfBitsGreen);
-                //writer.Write(numOfBytesGreen);
-                for (int i = 0; i < height; i++)
-                {
-                    for (int j = 0; j < width; j++)
+                    writer.Write(numOfBitsGreen);
+                    for (int i = 0; i < height; i++)
                     {
-                        //GREEN
-
-                        string greenVal = greenDict[(int)OperatedImageMatrix[i, j].green];
-                        int greenBitsLength = greenBits.Length;
-                        int greenLength = greenVal.Length;
-                        remainingBits = 8 - greenBitsLength;
-                        if (greenLength <= remainingBits)
+                        for (int j = 0; j < width; j++)
                         {
-                            greenBits.Append(greenVal);
+                            //GREEN
 
-                        }
-                        else
-                        {
-                            int startIndex = 0;
-                            int takenBits = 0;
-                            do
+                            string greenVal = greenDict[(int)OperatedImageMatrix[i, j].green];
+                            int greenBitsLength = greenBits.Length;
+                            int greenLength = greenVal.Length;
+                            remainingBits = 8 - greenBitsLength;
+                            if (greenLength <= remainingBits)
                             {
-                                remainingBits = 8 - greenBits.Length;
-                                takenBits += remainingBits;
-                                greenBits.Append(greenVal.Substring(startIndex, remainingBits));
-                                writer.Write(Convert.ToByte(greenBits.ToString(), 2));
-                                // writtenGreen++;
-                                greenBits.Clear();
-                                startIndex = takenBits;
-
-                            } while (greenLength - takenBits > 8);
-                            if (greenLength - takenBits > 0)
-                            {
-                                greenBits.Append(greenVal.Substring(startIndex));
-                            }
-                        }
-                        if (greenBits.Length == 8 || (i == height - 1 && j == width - 1))
-                        {
-                            if (greenBits.Length > 0)
-                            {
-                                byte greenByte = Convert.ToByte(greenBits.ToString(), 2);
-                                writer.Write(greenByte);
-                                //writtenGreen++;
-                                greenBits.Clear();
+                                greenBits.Append(greenVal);
 
                             }
-                            //convert to byte
+                            else
+                            {
+                                int startIndex = 0;
+                                int takenBits = 0;
+                                do
+                                {
+                                    remainingBits = 8 - greenBits.Length;
+                                    takenBits += remainingBits;
+                                    greenBits.Append(greenVal.Substring(startIndex, remainingBits));
+                                    writer.Write(Convert.ToByte(greenBits.ToString(), 2));
+                                    // writtenGreen++;
+                                    greenBits.Clear();
+                                    startIndex = takenBits;
+
+                                } while (greenLength - takenBits > 8);
+                                if (greenLength - takenBits > 0)
+                                {
+                                    greenBits.Append(greenVal.Substring(startIndex));
+                                }
+                            }
+                            if (greenBits.Length == 8 || (i == height - 1 && j == width - 1))
+                            {
+                                if (greenBits.Length > 0)
+                                {
+                                    byte greenByte = Convert.ToByte(greenBits.ToString(), 2);
+                                    writer.Write(greenByte);
+                                    //writtenGreen++;
+                                    greenBits.Clear();
+
+                                }
+                                //convert to byte
+                            }
+
                         }
 
                     }
-
-                }
-
-                //writ blue bits
-                //int writtenBlue = 0;
-                //int numOfBytesBlue = 0;
-                //if (numOfBitsBlue % 8 == 0)
-                //    numOfBytesBlue = numOfBitsBlue / 8;
-                //else
-                //    numOfBytesBlue = (numOfBitsBlue / 8) + 1;
-                writer.Write(numOfBitsBlue);
-                //writer.Write(numOfBytesBlue);
-                for (int i = 0; i < height; i++)
-                {
-                    for (int j = 0; j < width; j++)
+                    writer.Write(numOfBitsBlue);
+                    for (int i = 0; i < height; i++)
                     {
-                        //BLUE
-
-                        string blueVal = blueDict[(int)OperatedImageMatrix[i, j].blue];
-                        int blueBitsLength = blueBits.Length;
-                        int blueLength = blueVal.Length;
-                        remainingBits = 8 - blueBitsLength;
-                        if (blueLength <= remainingBits)
+                        for (int j = 0; j < width; j++)
                         {
-                            blueBits.Append(blueVal);
+                            //BLUE
 
-                        }
-                        else
-                        {
-                            int startIndex = 0;
-                            int takenBits = 0;
-                            do
+                            string blueVal = blueDict[(int)OperatedImageMatrix[i, j].blue];
+                            int blueBitsLength = blueBits.Length;
+                            int blueLength = blueVal.Length;
+                            remainingBits = 8 - blueBitsLength;
+                            if (blueLength <= remainingBits)
                             {
-                                remainingBits = 8 - blueBits.Length;
-                                takenBits += remainingBits;
-                                blueBits.Append(blueVal.Substring(startIndex, remainingBits));
-                                writer.Write(Convert.ToByte(blueBits.ToString(), 2));
-                                //writtenBlue++;
-                                blueBits.Clear();
-                                startIndex = takenBits;
-
-                            } while (blueLength - takenBits > 8);
-                            if (blueLength - takenBits > 0)
-                            {
-                                blueBits.Append(blueVal.Substring(startIndex));
-                            }
-                        }
-                        if (blueBits.Length == 8 || (i == height - 1 && j == width - 1))
-                        {
-                            if (blueBits.Length > 0)
-                            {
-                                byte blueByte = Convert.ToByte(blueBits.ToString(), 2);
-                                writer.Write(blueByte);
-                                // writtenBlue++;
-                                blueBits.Clear();
+                                blueBits.Append(blueVal);
 
                             }
-                            //convert to byte
+                            else
+                            {
+                                int startIndex = 0;
+                                int takenBits = 0;
+                                do
+                                {
+                                    remainingBits = 8 - blueBits.Length;
+                                    takenBits += remainingBits;
+                                    blueBits.Append(blueVal.Substring(startIndex, remainingBits));
+                                    writer.Write(Convert.ToByte(blueBits.ToString(), 2));
+                                    //writtenBlue++;
+                                    blueBits.Clear();
+                                    startIndex = takenBits;
+
+                                } while (blueLength - takenBits > 8);
+                                if (blueLength - takenBits > 0)
+                                {
+                                    blueBits.Append(blueVal.Substring(startIndex));
+                                }
+                            }
+                            if (blueBits.Length == 8 || (i == height - 1 && j == width - 1))
+                            {
+                                if (blueBits.Length > 0)
+                                {
+                                    byte blueByte = Convert.ToByte(blueBits.ToString(), 2);
+                                    writer.Write(blueByte);
+                                    // writtenBlue++;
+                                    blueBits.Clear();
+
+                                }
+                                //convert to byte
+                            }
+
                         }
 
                     }
-
                 }
+                else
+                {
+                    for(int i = 0; i < height; i++)
+                    {
+                        for(int j = 0; j < width; j++)
+                        {
+                            writer.Write((byte)OperatedImageMatrix[i, j].red);
+                        }
+                    }
+                    writer.Write(numOfBitsGreen);
+                    for (int i = 0; i < height; i++)
+                    {
+                        for (int j = 0; j < width; j++)
+                        {
+                            writer.Write((byte)OperatedImageMatrix[i, j].green);
+                        }
+                    }
+                    writer.Write(numOfBitsBlue);
+                    for (int i = 0; i < height; i++)
+                    {
+                        for (int j = 0; j < width; j++)
+                        {
+                            writer.Write((byte)OperatedImageMatrix[i, j].blue);
+                        }
+                    }
+                }
+
             }
         }
 
@@ -391,17 +401,22 @@ namespace ImageEncryptCompress
                     seedRead = reader.ReadString();
                     tapPosRead = reader.ReadInt32();
                 }
+                compressed100 = reader.ReadBoolean();
                 void readDicts(ref Dictionary<string, int> dict)
                 {
                     int count= reader.ReadInt32();
                     for(int i=0; i < count; i++)
                     {
-                        dict[reader.ReadString()] = reader.ReadInt32(); 
+                        dict[reader.ReadString()] = (int)reader.ReadByte(); 
                     }
                 }
-                readDicts(ref redDictRead);
-                readDicts(ref greenDictRead);
-                readDicts(ref blueDictRead);
+                
+                if(!compressed100)
+                {
+                    readDicts(ref redDictRead);
+                    readDicts(ref greenDictRead);
+                    readDicts(ref blueDictRead);
+                }
                 heightRead = reader.ReadInt32();
                 widthRead = reader.ReadInt32();
                 try
@@ -411,7 +426,7 @@ namespace ImageEncryptCompress
                     void readColors(ref int bitsCount,ref byte[] colorBytes)
                     {
                         bitsCount= reader.ReadInt32();
-                       int byteCount = bitsCount % 8 == 0 ? bitsCount / 8 : bitsCount / 8 + 1;
+                        int byteCount = bitsCount % 8 == 0 ? bitsCount / 8 : bitsCount / 8 + 1;
                         colorBytes=new byte[byteCount];
                         for (int i = 0; i < byteCount; i++)
                         {
@@ -426,13 +441,27 @@ namespace ImageEncryptCompress
                     List<string> blueList = new List<string>();
                     //read red bytes into red list
                     readColors(ref numberOfBits, ref bytes);
-                    ReadCompressedImage(bytes, ref redList, redDictRead, numberOfBits);
-                    //read green bytes into green list
-                    readColors(ref numberOfBits, ref bytes);
-                    ReadCompressedImage(bytes, ref greenList, redDictRead, numberOfBits);
-                    //read blue bytes into blue list
-                    readColors(ref numberOfBits, ref bytes);
-                    ReadCompressedImage(bytes, ref blueList, redDictRead, numberOfBits);
+                    if (compressed100)
+                    {
+                        readUncompressedImage(bytes, ref redList, ref redDictRead);
+                        //read green bytes into green list
+                        readColors(ref numberOfBits, ref bytes);
+                        readUncompressedImage(bytes, ref greenList, ref greenDictRead);
+                        //read blue bytes into blue list
+                        readColors(ref numberOfBits, ref bytes);
+                        readUncompressedImage(bytes, ref  blueList, ref blueDictRead);
+                    }
+                    else
+                    {
+                        ReadCompressedImage(bytes, ref redList, redDictRead, numberOfBits);
+                        //read green bytes into green list
+                        readColors(ref numberOfBits, ref bytes);
+                        ReadCompressedImage(bytes, ref greenList, greenDictRead, numberOfBits);
+                        //read blue bytes into blue list
+                        readColors(ref numberOfBits, ref bytes);
+                        ReadCompressedImage(bytes, ref blueList, blueDictRead, numberOfBits);
+
+                    }
                     //put values
                     PutDecompressedValues(redList, greenList, blueList);
                 }
@@ -443,19 +472,34 @@ namespace ImageEncryptCompress
             }
         }
 
+        private void readUncompressedImage(byte[] arr, ref List<string> list, ref Dictionary<string, int> dict)
+        {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < arr.Length; i++)
+            {
+                string thisByte = Convert.ToString(arr[i], 2).PadLeft(8, '0');
+                list.Add(thisByte);
+                if (!dict.ContainsKey(thisByte))
+                {
+                    dict[thisByte] = (int) arr[i];
+                }
+            }
+
+        }
+
         private void ReadCompressedImage(byte[] arr, ref List<string> list, Dictionary<string, int> dict, int numberOfBits)
         {
             bool divisibleBy8 = false;
             if(numberOfBits % 8 == 0)
                 divisibleBy8 = true;
             StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < arr.Length; i++)
+            for(int i = 0; i < arr.Length - 1; i++)
             {
-                string thisByte;
-                if(!divisibleBy8 && i == arr.Length - 1)
-                    thisByte = Convert.ToString(arr[i], 2).PadRight(8, '0');
-                else
-                    thisByte = Convert.ToString(arr[i], 2).PadLeft(8, '0');
+                string thisByte = Convert.ToString(arr[i], 2).PadLeft(8, '0');
+                //thisByte = 
+                //if(!divisibleBy8 && i == arr.Length - 1)
+                //    thisByte = Convert.ToString(arr[i], 2).PadRight(8, '0');
+                //else
 
                 for(int j = 0; j < thisByte.Length; j++)
                 {
@@ -468,6 +512,23 @@ namespace ImageEncryptCompress
                 }
                 
 
+            }
+            string lastByte;
+            if(!divisibleBy8) { 
+                lastByte = Convert.ToString(arr[arr.Length - 1], 2).PadRight(8, '0');
+            }
+            else
+            {
+                lastByte = Convert.ToString(arr[arr.Length - 1], 2).PadLeft(8, '0');
+            }
+            for (int j = 0; j < lastByte.Length; j++)
+            {
+                sb.Append(lastByte[j]);
+                if (dict.ContainsKey(sb.ToString()))
+                {
+                    list.Add(sb.ToString());
+                    sb.Clear();
+                }
             }
         }
 
