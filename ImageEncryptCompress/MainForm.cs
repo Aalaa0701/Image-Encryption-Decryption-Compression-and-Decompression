@@ -53,6 +53,8 @@ namespace ImageEncryptCompress
         int widthRead = 0;
         string fileReadPath;
 
+
+
         private void btnOpen_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -85,18 +87,10 @@ namespace ImageEncryptCompress
 
         private void btnApplyOperation_Click(object sender, EventArgs e)
         {
-            //string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            //string filePath = Path.Combine(baseDirectory, "binaryfile.bin");
-            
-            
-
-            //variables for writing
-            
-            
             RaiseError();
             
-            Histogram histoCrypted;
-            Histogram histo;
+            //Histogram histoCrypted;
+            //Histogram histo;
             switch (ModeSelect.Text)
             {
                 case "Encrypt":
@@ -108,8 +102,8 @@ namespace ImageEncryptCompress
                     sw.Reset();
                     sw.Start();
                     OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
-                    histoCrypted = new Histogram(OperatedImageMatrix);
-                    histo = new Histogram(ImageMatrix);
+                    //histoCrypted = new Histogram(OperatedImageMatrix);
+                    //histo = new Histogram(ImageMatrix);
 
                     //if (histo.Derivation() < histoCrypted.Derivation())
                     //{
@@ -118,12 +112,11 @@ namespace ImageEncryptCompress
                     //}
 
                     ImageOperations.Compression(ref compressed100, ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, OperatedImageMatrix);
-                    //WriteInaFile(filePath, redDict, greenDict, blueDict, isEncrypted, key, 
-                    //    tapPos, numOfBytesRed, numOfBytesGreen, numOfBytesBlue);
                     sw.Stop();
                     MessageBox.Show(sw.Elapsed.ToString());
                     break;
                 case "Decrypt":
+                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
                     //if (histo.Derivation() > histoCrypted.Derivation())
                     //{
                     //    MessageBox.Show("image already decrypted");
@@ -132,15 +125,20 @@ namespace ImageEncryptCompress
                     break;
                 case "Compress":
                     ImageOperations.Compression(ref compressed100, ref numOfBytesRed, ref numOfBytesGreen, ref numOfBytesBlue, ref redDict, ref greenDict, ref blueDict, ImageMatrix);
-                    //WriteInaFile(filePath, redDict, greenDict, blueDict, isEncrypted, key, tapPos, 
-                    //    numOfBytesRed, numOfBytesGreen, numOfBytesBlue);
                     OperatedImageMatrix = ImageMatrix;
                     break;
                 case "Decompress":
-                  sw=new Stopwatch();
+                    sw = new Stopwatch();
+                    int numOfBitsRed = 0;
+                    int numOfBitsGreen = 0;
+                    int numOfBitsBlue = 0;
+                    byte[] redBytes = null;
+                    byte[] greenBytes = null;
+                    byte[] blueBytes = null;
+                    ReadFromFile(ref numOfBitsRed, ref numOfBitsGreen, ref numOfBitsBlue, ref redBytes, ref greenBytes, ref blueBytes);
                     sw.Reset();
                     sw.Start();
-                   ReadFromFile();
+                    ReadEveryPixel(numOfBitsRed, numOfBitsGreen, numOfBitsBlue, redBytes, greenBytes, blueBytes);
                     ImageMatrix = ImageOperations.Decompression(decompressedImage, redDictRead, blueDictRead, greenDictRead);
                     if (isEncryptedRead)
                         OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, seedRead, tapPosRead);
@@ -170,7 +168,7 @@ namespace ImageEncryptCompress
                 if (isEncrypted)
                 {
                     writer.Write(seed);
-                    writer.Write(tapPos);
+                    writer.Write((byte)tapPos);
                 }
                 writer.Write(compressed100);
                 if(!compressed100)
@@ -282,7 +280,6 @@ namespace ImageEncryptCompress
                                     takenBits += remainingBits;
                                     greenBits.Append(greenVal.Substring(startIndex, remainingBits));
                                     writer.Write(Convert.ToByte(greenBits.ToString(), 2));
-                                    // writtenGreen++;
                                     greenBits.Clear();
                                     startIndex = takenBits;
 
@@ -298,11 +295,9 @@ namespace ImageEncryptCompress
                                 {
                                     byte greenByte = Convert.ToByte(greenBits.ToString(), 2);
                                     writer.Write(greenByte);
-                                    //writtenGreen++;
                                     greenBits.Clear();
 
                                 }
-                                //convert to byte
                             }
 
                         }
@@ -334,7 +329,6 @@ namespace ImageEncryptCompress
                                     takenBits += remainingBits;
                                     blueBits.Append(blueVal.Substring(startIndex, remainingBits));
                                     writer.Write(Convert.ToByte(blueBits.ToString(), 2));
-                                    //writtenBlue++;
                                     blueBits.Clear();
                                     startIndex = takenBits;
 
@@ -350,11 +344,9 @@ namespace ImageEncryptCompress
                                 {
                                     byte blueByte = Convert.ToByte(blueBits.ToString(), 2);
                                     writer.Write(blueByte);
-                                    // writtenBlue++;
                                     blueBits.Clear();
 
                                 }
-                                //convert to byte
                             }
 
                         }
@@ -391,7 +383,8 @@ namespace ImageEncryptCompress
             }
         }
 
-        private void ReadFromFile()
+        private void ReadFromFile(ref int numOfBitsRed, ref int numOfBitsGreen, ref int numOfBitsBlue, ref byte[] redArr, ref byte[] greenArr,
+            ref byte[] blueArr)
         {
             using (BinaryReader reader = new BinaryReader(File.Open(fileReadPath, FileMode.Open)))
             {
@@ -399,7 +392,7 @@ namespace ImageEncryptCompress
                 if (isEncryptedRead)
                 {
                     seedRead = reader.ReadString();
-                    tapPosRead = reader.ReadInt32();
+                    tapPosRead = reader.ReadByte();
                 }
                 compressed100 = reader.ReadBoolean();
                 void readDicts(ref Dictionary<string, int> dict)
@@ -434,42 +427,47 @@ namespace ImageEncryptCompress
                         }
                     }
 
-                    int numberOfBits=0;
-                    byte[] bytes=null;
-                    List<string> redList = new List<string>();
-                    List<string> greenList = new List<string>();
-                    List<string> blueList = new List<string>();
                     //read red bytes into red list
-                    readColors(ref numberOfBits, ref bytes);
-                    if (compressed100)
-                    {
-                        readUncompressedImage(bytes, ref redList, ref redDictRead);
-                        //read green bytes into green list
-                        readColors(ref numberOfBits, ref bytes);
-                        readUncompressedImage(bytes, ref greenList, ref greenDictRead);
-                        //read blue bytes into blue list
-                        readColors(ref numberOfBits, ref bytes);
-                        readUncompressedImage(bytes, ref  blueList, ref blueDictRead);
-                    }
-                    else
-                    {
-                        ReadCompressedImage(bytes, ref redList, redDictRead, numberOfBits);
-                        //read green bytes into green list
-                        readColors(ref numberOfBits, ref bytes);
-                        ReadCompressedImage(bytes, ref greenList, greenDictRead, numberOfBits);
-                        //read blue bytes into blue list
-                        readColors(ref numberOfBits, ref bytes);
-                        ReadCompressedImage(bytes, ref blueList, blueDictRead, numberOfBits);
-
-                    }
-                    //put values
-                    PutDecompressedValues(redList, greenList, blueList);
+                    readColors(ref numOfBitsRed, ref redArr);
+                    readColors(ref numOfBitsGreen, ref greenArr);
+                    readColors(ref numOfBitsBlue, ref blueArr);
+                   
                 }
                 catch (OutOfMemoryException e)
                 {
                     Console.WriteLine($"EXCEPTION: {e.Message}");
                 }
             }
+        }
+
+        private void ReadEveryPixel(int numOfBitsRed, int numOfBitsGreen, int numOfBitsBlue, byte[] redArr, byte[] greenArr,
+            byte[] blueArr)
+        {
+            List<string> redList = new List<string>();
+            List<string> greenList = new List<string>();
+            List<string> blueList = new List<string>();
+
+            if (compressed100)
+            {
+                //read red bytes into green list
+                readUncompressedImage(redArr, ref redList, ref redDictRead);
+                //read green bytes into green list
+                readUncompressedImage(greenArr, ref greenList, ref greenDictRead);
+                //read blue bytes into blue list
+                readUncompressedImage(blueArr, ref blueList, ref blueDictRead);
+            }
+            else
+            {
+                //read red bytes into green list
+                ReadCompressedImage(redArr, ref redList, redDictRead, numOfBitsRed);
+                //read green bytes into green list
+                ReadCompressedImage(greenArr, ref greenList, greenDictRead, numOfBitsGreen);
+                //read blue bytes into blue list
+                ReadCompressedImage(blueArr, ref blueList, blueDictRead, numOfBitsBlue);
+
+            }
+            //put values
+            PutDecompressedValues(redList, greenList, blueList);
         }
 
         private void readUncompressedImage(byte[] arr, ref List<string> list, ref Dictionary<string, int> dict)
@@ -496,11 +494,6 @@ namespace ImageEncryptCompress
             for(int i = 0; i < arr.Length - 1; i++)
             {
                 string thisByte = Convert.ToString(arr[i], 2).PadLeft(8, '0');
-                //thisByte = 
-                //if(!divisibleBy8 && i == arr.Length - 1)
-                //    thisByte = Convert.ToString(arr[i], 2).PadRight(8, '0');
-                //else
-
                 for(int j = 0; j < thisByte.Length; j++)
                 {
                     sb.Append(thisByte[j]);
@@ -587,12 +580,12 @@ namespace ImageEncryptCompress
 
         private void SaveBTN_Click(object sender, EventArgs e)
         {
-            string[] names= fileName.Split('\\');
+            //string[] names= fileName.Split('\\');
             SaveFileDialog fileSave = new SaveFileDialog();
             fileSave.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
             fileSave.Title = "save encrepted image"; 
             fileSave.Filter= "Image Files|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files (*.*)|*.*";
-            fileSave.FileName = $"ecrypted {names[names.Length-1]}";
+            //fileSave.FileName = $"ecrypted {names[names.Length-1]}";
             DialogResult result = fileSave.ShowDialog();
             if(result == DialogResult.OK&&pictureBox2.Image!=null)
             {
@@ -613,7 +606,7 @@ namespace ImageEncryptCompress
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
             saveFileDialog.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            saveFileDialog.Title = "save Decompressed File";
+            saveFileDialog.Title = "save Compressed File";
             saveFileDialog.DefaultExt = "bin";
             saveFileDialog.Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*";
 
