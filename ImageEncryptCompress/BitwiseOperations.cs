@@ -20,26 +20,19 @@ namespace ImageEncryptCompress
             long result = (shiftedKey | xorResult) & capMask;
             return result;
         }
-        public static int GeneratePassword(ref string key, int tapPosition, int numberOfBitsToGenerate = 8)
+        public static int GeneratePassword(ref Int64 key, int tapPosition, int numberOfBits)
         {
-            long convertedKey = Convert.ToInt64(key, 2);
-            int numberOfBits = key.Length;
             long desiredBit;
             long result = (1 << 8) - 1;
-            string bitADDER;
-            for (int i = 0; i < numberOfBitsToGenerate; i++)
+            for (int i = 0; i < 8; i++)
             {
-                convertedKey = XORBits(convertedKey, numberOfBits, tapPosition);
-                desiredBit = convertedKey & 1;
+                key = XORBits(key, numberOfBits, tapPosition);
+                desiredBit = key & 1;
                 if (desiredBit == 1)
                     continue;
                 desiredBit = ~(1 << 7 - i);
-
                 result = result & desiredBit;
-
-
             }
-            key = Convert.ToString(convertedKey, 2).PadLeft(numberOfBits, '0');
             return (int)result;
         }
         public static byte GenerateAlphanumericPassword(ref StringBuilder seed, int tapPos, int seedLength)

@@ -279,21 +279,26 @@ namespace ImageEncryptCompress
        //static HashSet<int> bluePasswords = new HashSet<int>();
         public static RGBPixel[,] ImageEncryption(RGBPixel[,] ImageMatrix,String initKey, int tapPosition)
         {
-            //redPasswords.Clear();
+            //redPasswords.Clear();1010
             //greenPasswords.Clear();
             //bluePasswords.Clear();
+            //red, green blue 
+            //8     8       8
+            //redPassword, greenpassword, blue passwords
+            //redpassword^red, .. ,      ..
+            
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
-            string key = initKey;
+            Int64 key =Convert.ToInt64(initKey,2);
             RGBPixel[,] resultImageMatrix=new RGBPixel[Height,Width];
             Array.Copy(ImageMatrix, 0, resultImageMatrix, 0, ImageMatrix.Length);
             for (int i = 0; i < Height; i++)
             {
                 for(int j = 0; j < Width; j++)
                 {
-                    int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
+                    int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition,initKey.Length);
+                    int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition,initKey.Length);
+                    int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition, initKey.Length);
                     //redPasswords.Add(redPassword);
                     //greenPasswords.Add(greenPassword);
                     //bluePasswords.Add(bluePassword);
