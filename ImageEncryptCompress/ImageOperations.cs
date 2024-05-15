@@ -360,6 +360,12 @@ namespace ImageEncryptCompress
         }
         public static RGBPixel[,] Compression(ref bool compressed100, ref int numOfBytesRed, ref int numOfBytesGreen, ref int numOfBytesBlue, ref Dictionary<int, string> redDict, ref Dictionary<int, string> greenDict, ref Dictionary<int, string> blueDict, RGBPixel[,] ImageMatrix)
         {   
+            int originalSizer=0;
+            int originalSizeb=0;
+            int originalSizeg=0;
+            int compressedSizer=0;
+            int compressedSizeb=0;
+            int compressedSizeg=0;
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
             Dictionary<int , int> freqRed = new Dictionary<int , int>();
@@ -367,12 +373,6 @@ namespace ImageEncryptCompress
             Dictionary<int , int> freqGreen = new Dictionary<int , int>();
             Node left, right;
             int newFreq;
-            int originalSizer=0;
-            int originalSizeb=0;
-            int originalSizeg=0;
-            int compressedSizer=0;
-            int compressedSizeb=0;
-            int compressedSizeg=0;
             //frequency of red
             Histogram histogram = new Histogram(ImageMatrix);
             for(int i = 0; i < histogram.redHistogram.Count();i++)
@@ -456,10 +456,10 @@ namespace ImageEncryptCompress
 
 
             //Dictionary<int, string> redencoding = new Dictionary<int, string>();
-            Traverse(priorityQueueRed.Dequeue(), "",redDict);
             //Dictionary<int, string> blueencoding = new Dictionary<int, string>();
-            Traverse(priorityQueueBlue.Dequeue(), "",blueDict);
             //Dictionary<int, string> greenencoding = new Dictionary<int, string>();
+            Traverse(priorityQueueRed.Dequeue(), "",redDict);
+            Traverse(priorityQueueBlue.Dequeue(), "",blueDict);
             Traverse(priorityQueueGreen.Dequeue(), "",greenDict);
           
             foreach (var i in redDict)
@@ -497,7 +497,7 @@ namespace ImageEncryptCompress
         }
        
 
-        public static RGBPixel[,] Decompression(DecompressedImage[,] compressedImage, Dictionary<string, int> redDictionary, Dictionary<string, int> blueDictionary, Dictionary<string, int> greenDictionary)
+        public static RGBPixel[,] Decompression(DecompressedImage[,] compressedImage, Dictionary<int, int> redDictionary, Dictionary<int, int> blueDictionary, Dictionary<int, int> greenDictionary)
         {
             int Height = GetHeightCompressed(compressedImage);
             int Width = GetWidthCompressed(compressedImage);
@@ -508,14 +508,12 @@ namespace ImageEncryptCompress
             {
                 for (int j = 0; j < Width; j++)
                 {
-
-                    decompressedImage[i, j].red = (byte)redDictionary[compressedImage[i, j].redRep];
-                    decompressedImage[i, j].green = (byte)greenDictionary[compressedImage[i, j].greenRep];
-                    decompressedImage[i, j].blue = (byte)blueDictionary[compressedImage[i, j].blueRep];
+                    decompressedImage[i, j].red = (byte)redDictionary[compressedImage[i, j].redRep.GetHashCode()];
+                    decompressedImage[i, j].green = (byte)greenDictionary[compressedImage[i, j].greenRep.GetHashCode()];
+                    decompressedImage[i, j].blue = (byte)blueDictionary[compressedImage[i, j].blueRep.GetHashCode()];
                     //byte redVal = (byte)redDictionary[compressedImage[i, j].redRep];
                     //byte blueVal = (byte)blueDictionary[compressedImage[i, j].blueRep];
                     //byte greenVal = (byte)greenDictionary[compressedImage[i, j].greenRep];
-
                     //decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
                     
                 }

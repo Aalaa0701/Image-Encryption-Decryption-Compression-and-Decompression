@@ -46,9 +46,9 @@ namespace ImageEncryptCompress
         bool isEncryptedRead = false;
         string seedRead = string.Empty;
         int tapPosRead = 0;
-        Dictionary<string, int> redDictRead = new Dictionary<string, int>();
-        Dictionary<string, int> greenDictRead = new Dictionary<string, int>();
-        Dictionary<string, int> blueDictRead = new Dictionary<string, int>();
+        Dictionary<int, int> redDictRead = new Dictionary<int, int>();
+        Dictionary<int, int> greenDictRead = new Dictionary<int, int>();
+        Dictionary<int, int> blueDictRead = new Dictionary<int, int>();
         int heightRead = 0;
         int widthRead = 0;
         string fileReadPath;
@@ -173,23 +173,36 @@ namespace ImageEncryptCompress
                 writer.Write(compressed100);
                 if(!compressed100)
                 {
+                    short val = 0;
+                    byte valLength = 0;
                     writer.Write(redDict.Count);
                     foreach (int keyVal in redDict.Keys)
                     {
-                        writer.Write(redDict[keyVal]);
+                        val = Convert.ToInt16(redDict[keyVal], 2);
+                        valLength = (byte)redDict[keyVal].Length;
+                        writer.Write((short) val);
+                        writer.Write((byte)valLength);
                         writer.Write((byte)keyVal);
                     }
                     writer.Write(greenDict.Count);
                     foreach (int keyVal in greenDict.Keys)
                     {
-                        writer.Write(greenDict[keyVal]);
+                        val = Convert.ToInt16(greenDict[keyVal], 2);
+                        valLength = (byte)greenDict[keyVal].Length;
+                        writer.Write((short)val);
+                        writer.Write((byte)valLength);
+                        //writer.Write(greenDict[keyVal]);
                         writer.Write((byte)keyVal);
 
                     }
                     writer.Write(blueDict.Count);
                     foreach (int keyVal in blueDict.Keys)
                     {
-                        writer.Write(blueDict[keyVal]);
+                        val = Convert.ToInt16(blueDict[keyVal], 2);
+                        valLength = (byte)blueDict[keyVal].Length;
+                        writer.Write((short)val);
+                        writer.Write((byte)valLength);
+                        //writer.Write(blueDict[keyVal]);
                         writer.Write((byte)keyVal);
 
                     }
@@ -395,12 +408,20 @@ namespace ImageEncryptCompress
                     tapPosRead = reader.ReadByte();
                 }
                 compressed100 = reader.ReadBoolean();
-                void readDicts(ref Dictionary<string, int> dict)
+                void readDicts(ref Dictionary<int, int> dict)
                 {
+                    string valRep;
+                    short val;
+                    byte valLength;
                     int count= reader.ReadInt32();
                     for(int i=0; i < count; i++)
                     {
-                        dict[reader.ReadString()] = (int)reader.ReadByte(); 
+
+                        val = reader.ReadInt16(); 
+                        valLength = reader.ReadByte();
+                        valRep = Convert.ToString(val, 2).PadLeft(valLength, '0');
+
+                        dict[valRep.GetHashCode()] = (int)reader.ReadByte(); 
                     }
                 }
                 
@@ -458,34 +479,38 @@ namespace ImageEncryptCompress
             }
             else
             {
+                //Stopwatch readEvery = new Stopwatch();
+                //readEvery.Reset();
+                //readEvery.Start();
                 //read red bytes into green list
                 ReadCompressedImage(redArr, ref redList, redDictRead, numOfBitsRed);
                 //read green bytes into green list
                 ReadCompressedImage(greenArr, ref greenList, greenDictRead, numOfBitsGreen);
                 //read blue bytes into blue list
                 ReadCompressedImage(blueArr, ref blueList, blueDictRead, numOfBitsBlue);
-
+                //readEvery.Stop();
+                //MessageBox.Show(readEvery.Elapsed.ToString());
             }
             //put values
             PutDecompressedValues(redList, greenList, blueList);
         }
 
-        private void readUncompressedImage(byte[] arr, ref List<string> list, ref Dictionary<string, int> dict)
+        private void readUncompressedImage(byte[] arr, ref List<string> list, ref Dictionary<int, int> dict)
         {
             StringBuilder sb = new StringBuilder();
             for(int i = 0; i < arr.Length; i++)
             {
                 string thisByte = Convert.ToString(arr[i], 2).PadLeft(8, '0');
                 list.Add(thisByte);
-                if (!dict.ContainsKey(thisByte))
+                if (!dict.ContainsKey(thisByte.GetHashCode()))
                 {
-                    dict[thisByte] = (int) arr[i];
+                    dict[thisByte.GetHashCode()] = (int)arr[i];
                 }
             }
 
         }
 
-        private void ReadCompressedImage(byte[] arr, ref List<string> list, Dictionary<string, int> dict, int numberOfBits)
+        private void ReadCompressedImage(byte[] arr, ref List<string> list, Dictionary<int, int> dict, int numberOfBits)
         {
             bool divisibleBy8 = false;
             if(numberOfBits % 8 == 0)
@@ -497,7 +522,7 @@ namespace ImageEncryptCompress
                 for(int j = 0; j < thisByte.Length; j++)
                 {
                     sb.Append(thisByte[j]);
-                    if (dict.ContainsKey(sb.ToString()))
+                    if (dict.ContainsKey(sb.ToString().GetHashCode()))
                     {
                         list.Add(sb.ToString());
                         sb.Clear();
@@ -517,7 +542,7 @@ namespace ImageEncryptCompress
             for (int j = 0; j < lastByte.Length; j++)
             {
                 sb.Append(lastByte[j]);
-                if (dict.ContainsKey(sb.ToString()))
+                if (dict.ContainsKey(sb.ToString().GetHashCode()))
                 {
                     list.Add(sb.ToString());
                     sb.Clear();
