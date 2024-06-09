@@ -4,6 +4,9 @@ using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
+using Priority_Queue;
+using System.Linq;
+using System.ComponentModel;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -17,11 +20,30 @@ namespace ImageEncryptCompress
     {
         public byte red, green, blue;
     }
+    public struct DecompressedImage
+    {
+        public string redRep, greenRep, blueRep;
+    }
     public struct RGBPixelD
     {
         public double red, green, blue;
     }
-    
+    public class Node
+    {
+        public int colorval;
+        public int freq;
+        public Node left;
+        public Node right;
+        //int val;
+        public Node(int colorval,int freq,Node left ,Node right)
+        {
+            this.freq = freq;
+            this.left = left;
+            this.right = right;
+            this.colorval = colorval;
+            //this.val = val;
+        }
+    }
   
     /// <summary>
     /// Library of static functions that deal with images
@@ -102,6 +124,11 @@ namespace ImageEncryptCompress
         {
             return ImageMatrix.GetLength(0);
         }
+        public static int GetHeightCompressed(DecompressedImage[,] compressedImage)
+        {
+            return compressedImage.GetLength(0);
+
+        }
 
         /// <summary>
         /// Get the width of the image 
@@ -111,6 +138,10 @@ namespace ImageEncryptCompress
         public static int GetWidth(RGBPixel[,] ImageMatrix)
         {
             return ImageMatrix.GetLength(1);
+        }
+        public static int GetWidthCompressed(DecompressedImage[,] compressedImage)
+        {
+            return compressedImage.GetLength(1);
         }
 
         /// <summary>
@@ -243,40 +274,281 @@ namespace ImageEncryptCompress
 
             return Filtered;
         }
-       static HashSet<int> redPasswords= new HashSet<int>();
-       static HashSet<int> greenPasswords = new HashSet<int>();
-       static HashSet<int> bluePasswords = new HashSet<int>();
+       //static HashSet<int> redPasswords= new HashSet<int>();
+       //static HashSet<int> greenPasswords = new HashSet<int>();
+       //static HashSet<int> bluePasswords = new HashSet<int>();
         public static RGBPixel[,] ImageEncryption(RGBPixel[,] ImageMatrix,String initKey, int tapPosition)
         {
-            redPasswords.Clear();
-            greenPasswords.Clear();
-            bluePasswords.Clear();
+            //redPasswords.Clear();1010
+            //greenPasswords.Clear();
+            //bluePasswords.Clear();
+            //red, green blue 
+            //8     8       8
+            //redPassword, greenpassword, blue passwords
+            //redpassword^red, .. ,      ..
+            
             int Height = GetHeight(ImageMatrix);
             int Width = GetWidth(ImageMatrix);
-            string key = initKey;
+            Int64 key =Convert.ToInt64(initKey,2);
             RGBPixel[,] resultImageMatrix=new RGBPixel[Height,Width];
             Array.Copy(ImageMatrix, 0, resultImageMatrix, 0, ImageMatrix.Length);
             for (int i = 0; i < Height; i++)
             {
                 for(int j = 0; j < Width; j++)
                 {
-                    int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition);
-                    redPasswords.Add(redPassword);
-                    greenPasswords.Add(greenPassword);
-                    bluePasswords.Add(bluePassword);
+                    int redPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition,initKey.Length);
+                    int greenPassword = BitwiseOperations.GeneratePassword(ref key, tapPosition,initKey.Length);
+                    int bluePassword = BitwiseOperations.GeneratePassword(ref key, tapPosition, initKey.Length);
+                    //redPasswords.Add(redPassword);
+                    //greenPasswords.Add(greenPassword);
+                    //bluePasswords.Add(bluePassword);
                     resultImageMatrix[i, j].red ^= (byte)redPassword;
                     resultImageMatrix[i, j].green ^= (byte)greenPassword;
                     resultImageMatrix[i, j].blue ^= (byte)bluePassword;
                 }
 
             }
-            MessageBox.Show($"red:{redPasswords.Count}\n" +
-                $"blue:{bluePasswords.Count}\n" +
-                $"green:{greenPasswords.Count}\n");
+            //MessageBox.Show($"red:{redPasswords.Count}\n" +
+            //    $"blue:{bluePasswords.Count}\n" +
+            //    $"green:{greenPasswords.Count}\n");
             return resultImageMatrix;
         }
+        public static RGBPixel[,] ImageEncryptionAlphanumeric(RGBPixel[,] ImageMatrix, String initKey, int tapPosition)
+        {
+            int Height = GetHeight(ImageMatrix);
+            int Width = GetWidth(ImageMatrix);
+            StringBuilder initialSeed = new StringBuilder(initKey);
+            int seedLength = initialSeed.Length;
+            RGBPixel[,] resultImageMatrix = new RGBPixel[Height, Width];
+            Array.Copy(ImageMatrix, 0, resultImageMatrix, 0, ImageMatrix.Length);
+            for(int i = 0; i < Height; i++)
+            {
+                for(int j = 0; j < Width; j++)
+                {
+                    byte redChar = BitwiseOperations.GenerateAlphanumericPassword(ref initialSeed, tapPosition, seedLength);
+                    byte greenChar = BitwiseOperations.GenerateAlphanumericPassword(ref initialSeed, tapPosition, seedLength);
+                    byte blueChar = BitwiseOperations.GenerateAlphanumericPassword(ref initialSeed, tapPosition, seedLength);
+                    resultImageMatrix[i, j].red ^= redChar;
+                    resultImageMatrix[i, j].green ^= greenChar;
+                    resultImageMatrix[i, j].blue ^= blueChar;
+                }
+            }
 
+            return resultImageMatrix;
+
+        }
+        static SimplePriorityQueue<Node> priorityQueueRed = new SimplePriorityQueue<Node>();
+        static SimplePriorityQueue<Node> priorityQueueBlue = new SimplePriorityQueue<Node>();
+        static SimplePriorityQueue<Node> priorityQueueGreen = new SimplePriorityQueue<Node>();
+        public static Dictionary<int, int> encodeint = new Dictionary<int, int>();
+        //traverse tree 
+        public static Dictionary<int, string> Traverse(Node root, string bit, Dictionary<int, string> encode)
+        {
+            //encode.Clear();
+            if (root == null)
+            {
+                return encode;
+            }
+            if (root.left == null && root.right == null)
+            {
+                    encode[root.colorval] = bit;
+            }
+            Traverse(root.left, bit + "0",encode);
+            Traverse(root.right, bit + "1", encode);
+            return encode;
+
+        }
+        public static RGBPixel[,] Compression(ref bool compressed100, ref int numOfBytesRed, ref int numOfBytesGreen, ref int numOfBytesBlue, ref Dictionary<int, string> redDict, ref Dictionary<int, string> greenDict, ref Dictionary<int, string> blueDict, RGBPixel[,] ImageMatrix)
+        {   
+            int originalSizer=0;
+            int originalSizeb=0;
+            int originalSizeg=0;
+            int compressedSizer=0;
+            int compressedSizeb=0;
+            int compressedSizeg=0;
+            int Height = GetHeight(ImageMatrix);
+            int Width = GetWidth(ImageMatrix);
+            Dictionary<int , int> freqRed = new Dictionary<int , int>();
+            Dictionary<int , int> freqBlue = new Dictionary<int , int>();
+            Dictionary<int , int> freqGreen = new Dictionary<int , int>();
+            Node left, right;
+            int newFreq;
+            //frequency of red
+            Histogram histogram = new Histogram(ImageMatrix);
+            for(int i = 0; i < histogram.redHistogram.Count();i++)
+            {
+                if (histogram.redHistogram[i]!=0)
+                    freqRed[i] = histogram.redHistogram[i];
+                
+            }
+            //frequency of blue 
+            for (int i = 0; i < histogram.blueHistogram.Count(); i++)
+            {
+                if (histogram.blueHistogram[i] != 0)
+                    freqBlue[i] = histogram.blueHistogram[i];
+
+            }
+            //frequency of green
+            for (int i = 0; i < histogram.greenHistogram.Count(); i++)
+            {
+                if (histogram.greenHistogram[i] != 0)
+                    freqGreen[i] = histogram.greenHistogram[i];
+
+            }
+            //calc original size
+            foreach(var i in freqRed)
+            {
+               
+                originalSizer += (freqRed[i.Key]*8);
+            }
+
+            foreach (var i in freqBlue)
+            {
+                originalSizeb += (freqBlue[i.Key]*8);
+            }
+            foreach (var i in freqGreen)
+            {
+                originalSizeg += (freqGreen[i.Key] * 8);
+            }
+
+            //huffman tree for red values
+            foreach (var i in freqRed.Keys)
+            {
+                Node newNode = new Node(i,freqRed[i],null,null);
+                priorityQueueRed.Enqueue(newNode, freqRed[i]);
+            }
+            while (priorityQueueRed.Count != 1)
+            {
+                left = priorityQueueRed.Dequeue();
+                right = priorityQueueRed.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueRed.Enqueue(newNode, newFreq);
+            }
+            //huffman tree for blue values
+            foreach (var i in freqBlue.Keys)
+            {
+                Node newNode = new Node(i, freqBlue[i], null, null);
+                priorityQueueBlue.Enqueue(newNode, freqBlue[i]);
+            }
+            while (priorityQueueBlue.Count != 1)
+            {
+                left = priorityQueueBlue.Dequeue();
+                right = priorityQueueBlue.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueBlue.Enqueue(newNode, newFreq);
+            }
+            //huffman tree for green values
+            foreach (var i in freqGreen.Keys)
+            {
+                Node newNode = new Node(i, freqGreen[i], null, null);
+                priorityQueueGreen.Enqueue(newNode, freqGreen[i]);
+            }
+            while (priorityQueueGreen.Count != 1)
+            {
+                left = priorityQueueGreen.Dequeue();
+                right = priorityQueueGreen.Dequeue();
+                newFreq = left.freq + right.freq;
+                Node newNode = new Node(260, newFreq, left, right);
+                priorityQueueGreen.Enqueue(newNode, newFreq);
+            }
+
+
+            //Dictionary<int, string> redencoding = new Dictionary<int, string>();
+            //Dictionary<int, string> blueencoding = new Dictionary<int, string>();
+            //Dictionary<int, string> greenencoding = new Dictionary<int, string>();
+            Traverse(priorityQueueRed.Dequeue(), "",redDict);
+            Traverse(priorityQueueBlue.Dequeue(), "",blueDict);
+            Traverse(priorityQueueGreen.Dequeue(), "",greenDict);
+          
+            foreach (var i in redDict)
+            {
+                compressedSizer += freqRed[i.Key] * i.Value.Length;
+            }
+            foreach (var i in blueDict)
+            {
+                compressedSizeb += freqBlue[i.Key] * i.Value.Length;
+            }
+            foreach (var i in greenDict)
+            {
+                compressedSizeg += freqGreen[i.Key] * i.Value.Length;
+            }
+            //new variables 
+            numOfBytesRed = compressedSizer;
+            numOfBytesGreen = compressedSizeg;
+            numOfBytesBlue = compressedSizeb;
+
+            double origSize = Height * Width * 24;
+            double compressedSize = compressedSizer + compressedSizeg + compressedSizeb;
+            double compRatio = (compressedSize / origSize) * 100;
+            if(compRatio == 100)
+                compressed100 = true;
+          /*  MessageBox.Show((compressedSizer + compressedSizeg + compressedSizeb).ToString());
+            MessageBox.Show(origSize.ToString());
+            MessageBox.Show($"Compression ratio: {compRatio}");*/
+            double redRatio = ((double)compressedSizer / (double)originalSizer) * 100;
+            double blueRatio = ((double)compressedSizeb / (double)originalSizeb) * 100;
+            double greenRatio = ((double)compressedSizeg / (double)originalSizeg) * 100;
+/*            MessageBox.Show($"Red ratio :{redRatio}\n" +
+            $"Blue ratio:{blueRatio}\n" +
+            $"Green ratio:{greenRatio}\n");*/
+            return ImageMatrix;
+        }
+       
+
+        public static RGBPixel[,] Decompression(DecompressedImage[,] compressedImage, Dictionary<int, int> redDictionary, Dictionary<int, int> blueDictionary, Dictionary<int, int> greenDictionary)
+        {
+            int Height = GetHeightCompressed(compressedImage);
+            int Width = GetWidthCompressed(compressedImage);
+
+            RGBPixel[,] decompressedImage = new RGBPixel[Height, Width];
+
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    decompressedImage[i, j].red = (byte)redDictionary[compressedImage[i, j].redRep.GetHashCode()];
+                    decompressedImage[i, j].green = (byte)greenDictionary[compressedImage[i, j].greenRep.GetHashCode()];
+                    decompressedImage[i, j].blue = (byte)blueDictionary[compressedImage[i, j].blueRep.GetHashCode()];
+                    //byte redVal = (byte)redDictionary[compressedImage[i, j].redRep];
+                    //byte blueVal = (byte)blueDictionary[compressedImage[i, j].blueRep];
+                    //byte greenVal = (byte)greenDictionary[compressedImage[i, j].greenRep];
+                    //decompressedImage[i, j] = new RGBPixel { red = redVal, blue = blueVal, green = greenVal };
+                    
+                }
+            }
+
+            return decompressedImage;
+        }
+
+        public static int DecodeValue(Dictionary<int, string> dictionary, int encodedValue, ref int bitIndex)
+        {
+            string code = "";
+            int value = 0;
+
+            while (!dictionary.ContainsValue(code))
+            {
+                int bit = GetBit(encodedValue, bitIndex);
+                code += bit.ToString();
+                bitIndex++;
+            }
+
+            foreach (var pair in dictionary)
+            {
+                if (pair.Value == code)
+                {
+                    value = pair.Key;
+                    break;
+                }
+            }
+
+            return value;
+        }
+
+        public static int GetBit(int value, int bitIndex)
+        {
+            return (value >> bitIndex) & 1;
+        }
     }
 }
