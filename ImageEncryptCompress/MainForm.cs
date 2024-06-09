@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -101,7 +102,7 @@ namespace ImageEncryptCompress
                     tapPos = Convert.ToInt32(TapPosTextBox.Text);
                     sw.Reset();
                     sw.Start();
-                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
+                    OperatedImageMatrix = ImageOperations.ImageEncryptionAlphanumeric(ImageMatrix, key, tapPos);
                     //histoCrypted = new Histogram(OperatedImageMatrix);
                     //histo = new Histogram(ImageMatrix);
 
@@ -116,6 +117,9 @@ namespace ImageEncryptCompress
                     MessageBox.Show(sw.Elapsed.ToString());
                     break;
                 case "Decrypt":
+                    //isEncrypted = false;
+                    key = KeyTextBox.Text;
+                    tapPos = Convert.ToInt32(TapPosTextBox.Text);
                     OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tapPos);
                     //if (histo.Derivation() > histoCrypted.Derivation())
                     //{
@@ -164,6 +168,10 @@ namespace ImageEncryptCompress
             using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
             using (BinaryWriter writer = new BinaryWriter(fileStream))
             {
+                Stopwatch sw = new Stopwatch();
+                sw.Reset();
+                sw.Start();
+
                 writer.Write(isEncrypted);
                 if (isEncrypted)
                 {
@@ -392,6 +400,8 @@ namespace ImageEncryptCompress
                         }
                     }
                 }
+                sw.Stop();
+                MessageBox.Show(sw.Elapsed.ToString());
 
             }
         }
@@ -479,6 +489,11 @@ namespace ImageEncryptCompress
             }
             else
             {
+                //Task handlingValues1 = Task.Run(() => ReadCompressedImage(redArr, ref redList, redDictRead, numOfBitsRed));
+                //Task handlingValues2 = Task.Run(() => ReadCompressedImage(blueArr, ref blueList, blueDictRead, numOfBitsBlue));
+                //Task handlingValues3 = Task.Run(() => ReadCompressedImage(greenArr, ref greenList, greenDictRead, numOfBitsGreen));
+
+                //Task.WaitAll(handlingValues1, handlingValues2, handlingValues3);
                 //Stopwatch readEvery = new Stopwatch();
                 //readEvery.Reset();
                 //readEvery.Start();
@@ -577,17 +592,21 @@ namespace ImageEncryptCompress
             double maxOrMin = histo.Derivation();
             for (int i = 0; i < keyNum; i++)
             {
-                int tap = Convert.ToInt32(TapPosTextBox.Text);
+                //int tap = Convert.ToInt32(TapPosTextBox.Text);
                 key = Convert.ToString(i, 2).PadLeft(n, '0');
-                OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, tap);
-                Histogram histoCrypted = new Histogram(OperatedImageMatrix);
-                //MessageBox.Show($"maxMIN: {maxOrMin}, curr {histoCrypted.Derivation()}");
-                if (histoCrypted.Derivation() >= maxOrMin)
+                for(int j = 0; j < key.Length; j++)
                 {
-                    resultImageMatrix = OperatedImageMatrix;
-                    maxOrMin = histoCrypted.Derivation();
+                    OperatedImageMatrix = ImageOperations.ImageEncryption(ImageMatrix, key, j);
+                    Histogram histoCrypted = new Histogram(OperatedImageMatrix);
+                    //MessageBox.Show($"maxMIN: {maxOrMin}, curr {histoCrypted.Derivation()}");
+                    if (histoCrypted.Derivation() >= maxOrMin)
+                    {
+                        resultImageMatrix = OperatedImageMatrix;
+                        maxOrMin = histoCrypted.Derivation();
+                    }
+                    //ImageOperations.DisplayImage(OperatedImageMatrix, pictureBox2);
                 }
-                ImageOperations.DisplayImage(OperatedImageMatrix, pictureBox2);
+
 
             }
             ImageOperations.DisplayImage(resultImageMatrix, pictureBox2);
