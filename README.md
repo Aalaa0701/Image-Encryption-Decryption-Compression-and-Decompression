@@ -27,9 +27,9 @@ This project was developed as part of the algorithm course at Ain Shams Universi
 ---
 
 ### Technologies Used
-- **Programming Language**: C++
+- **Programming Language**: C#
 - **Algorithms**: Linear Feedback Shift Register (LFSR), Huffman Encoding
-- **Development Tools**: Visual Studio, g++
+- **Development Tools**: Visual Studio
 
 ---
 
